@@ -10,6 +10,8 @@ Polygons are ``(N, 2)`` arrays of ``(x, y)`` vertices, given open or closed
 
 from __future__ import annotations
 
+import threading
+
 import numba
 import numpy as np
 import polars as pl
@@ -63,6 +65,13 @@ def inpoly_parallel(x, y, polygon):
     return D
 
 
+# Polars may evaluate batches of one expression in several threads at once.
+# numba's parallel kernels are not re-entrant under some threading layers
+# (e.g. "workqueue", the default on macOS), so calls are serialised; each call
+# already uses all cores.
+_NUMBA_LOCK = threading.Lock()
+
+
 def close_polygon(polygon) -> np.ndarray:
     """Return ``polygon`` as a float64 ``(N, 2)`` array whose last vertex equals the first."""
     poly = np.ascontiguousarray(np.asarray(polygon, dtype=np.float64))
@@ -86,7 +95,9 @@ def in_polygon(polygon, x: str = "x", y: str = "y") -> pl.Expr:
     def _batch(s: pl.Series) -> pl.Series:
         xs = s.struct.field(x).cast(pl.Float64).to_numpy()
         ys = s.struct.field(y).cast(pl.Float64).to_numpy()
-        return pl.Series(inpoly_parallel(xs, ys, poly), dtype=pl.Boolean)
+        with _NUMBA_LOCK:
+            mask = inpoly_parallel(xs, ys, poly)
+        return pl.Series(mask, dtype=pl.Boolean)
 
     return pl.struct(x, y).map_batches(_batch, return_dtype=pl.Boolean, is_elementwise=True)
 
