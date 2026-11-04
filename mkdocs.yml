@@ -1,0 +1,56 @@
+site_name: astro-polars
+site_description: Astronomy on Polars
+site_url: https://balbinot.github.io/astro-polars/
+repo_url: https://github.com/balbinot/astro-polars
+repo_name: balbinot/astro-polars
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.sections
+    - navigation.top
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: { icon: material/weather-night, name: Dark mode }
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: { icon: material/weather-sunny, name: Light mode }
+
+nav:
+  - Home: index.md
+  - Install: install.md
+  - Quick start: quickstart.md
+  - Conventions: conventions.md
+  - API:
+      - Sky namespace: api/namespace.md
+      - Sphere: api/sphere.md
+      - Polygons: api/polygon.md
+      - Cross-match: api/crossmatch.md
+      - HEALPix: api/healpix.md
+      - Coordinates: api/coords.md
+      - Robust statistics: api/robust.md
+      - Visualisation: api/viz.md
+  - Roadmap: roadmap.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: numpy
+            show_source: false
+            show_root_heading: true
+            members_order: source
+            separate_signature: true
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc: { permalink: true }
+  - pymdownx.highlight
+  - pymdownx.superfences
