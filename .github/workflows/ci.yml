@@ -23,7 +23,7 @@ jobs:
           args: check
       - uses: astral-sh/ruff-action@v3
         with:
-          args: format --check src tests
+          args: format --check
 
   test:
     name: test (${{ matrix.os }}, py${{ matrix.python }})
