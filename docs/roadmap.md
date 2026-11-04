@@ -9,38 +9,26 @@ already made, so new code lands in a predictable place.
 | Version | Content |
 |---|---|
 | 0.1 | Core: separations, cones, polygons, cross-match, duplicates, HEALPix, frame rotations with proper motions and errors, robust statistics, `viz` (heatmaps, HEALPix maps, skyproj). |
-| 0.2 | Photometry, Euclid MER pipeline, HEALPix hive-partitioned Parquet with manifest. |
+| 0.2 (done) | Photometry, Euclid MER pipeline, HEALPix hive-partitioned Parquet with manifest. |
 | 0.3 | HATS read and write (basic). |
 | 0.4 | Survey modules: Gaia (DR3 now, DR4 when its data model is public), 4MOST, DESI, DES, LSST. |
 | later | HATS margins, remote reads and LSDB interop; Rust kernels where profiling shows Python is the bottleneck. |
 
-## Photometry: `astro_polars.photometry`
+## Done in 0.2
 
-General flux and magnitude expressions, used by every survey module:
+- **Photometry** (`astro_polars.photometry`): AB zero points by unit, flux to
+  magnitude and back with numeric, unit-name or per-row zero points,
+  first-order errors, colours, aperture corrections, extinction, and the
+  `df.phot` namespace.
+- **HEALPix hive datasets** (`astro_polars.io.hive`): the layout below,
+  atomic writes, `Manifest` for restartable conversions, and `scan_hive`
+  with cone or pixel pruning.
+- **Euclid MER** (`astro_polars.surveys.euclid`): the pipeline as composable
+  steps, `convert_tiles` and the `astro-polars euclid-hive` command; FITS is
+  read with astropy (`fits` extra) without the pandas round trip. See
+  [Euclid MER](euclid.md).
 
-- `flux_to_mag(flux, zeropoint)`, `fluxerr_to_magerr(fluxerr, flux)`
-  (`2.5 / ln 10 * fluxerr / flux`), `ab_zeropoint(unit)` (e.g. µJy gives
-  `-2.5 log10(1e-6 / 3631)`), colours from flux ratios, aperture-to-total
-  corrections.
-- Extinction from an `E(B-V)` column with per-band coefficients.
-
-## Euclid: `astro_polars.surveys.euclid`
-
-Port of Eduardo's MER final-catalogue pipeline:
-
-- Column lists and maps (`KEEPCOLS`, `MAG_MAP`, `APER_MAG_MAP`,
-  `MAGERR_MAP`, `VISTO_MAP`) as module constants.
-- `transform(lf)` split into composable steps: `add_mags`,
-  `add_aper_mags` (corr1/corr2), `add_magerrs`, `add_visto_colours`,
-  `horn_cut(a=0.6, b=27.0, c=1.5)`, `quality_cut(mag_vis_auto_max=27.5)`,
-  plus `transform` running them in the original order.
-- `convert_tiles(indir, outdir, nside=32)` and a command-line entry point
-  `astro-polars euclid-hive`, writing the hive dataset below.
-- FITS reading through astropy (`fits` extra), without the pandas round trip.
-
-## HEALPix hive datasets: `astro_polars.io.hive`
-
-Layout (fastest to write and to prune when reading):
+Hive layout (fastest to write and to prune when reading):
 
 ```
 outdir/
@@ -49,13 +37,8 @@ outdir/
   hpx32=1235/...
 ```
 
-- Partition key: coarse nested pixel `hpx{nside}` (default nside 32, ~3.4 deg²).
-- Every file also keeps a fine nested index `hpx4096` for maps and
-  in-partition filtering (`viz.healpix_map(..., ipix="hpx4096")`).
-- Writes go to a temporary file and are renamed, so readers never see partial
-  files; the manifest is written atomically and makes conversions restartable.
-- `scan_hive(path, cone=...)` uses `healpix.cone_pixels` to read only the
-  partitions that touch a region.
+Possible additions: per-band Euclid extinction coefficients for `deredden`,
+a parallel (multi-process) `convert_tiles`, and Euclid SPE/PHZ catalogues.
 
 ## HATS: `astro_polars.io.hats`
 

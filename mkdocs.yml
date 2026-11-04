@@ -24,6 +24,7 @@ nav:
   - Install: install.md
   - Quick start: quickstart.md
   - Conventions: conventions.md
+  - Euclid MER: euclid.md
   - API:
       - Sky namespace: api/namespace.md
       - Sphere: api/sphere.md
@@ -32,6 +33,9 @@ nav:
       - HEALPix: api/healpix.md
       - Coordinates: api/coords.md
       - Robust statistics: api/robust.md
+      - Photometry: api/photometry.md
+      - Input and output: api/io.md
+      - Euclid: api/euclid.md
       - Visualisation: api/viz.md
   - Roadmap: roadmap.md
 

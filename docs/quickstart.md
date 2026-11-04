@@ -68,6 +68,33 @@ pairs = ap.crossmatch(cat1, cat2, radius_arcsec=1.0, how="inner")   # LazyFrame
 clean = ap.remove_duplicates(cat, radius_arcsec=1.0)                # DataFrame
 ```
 
+## Photometry
+
+```python
+lf.with_columns(
+    g=ap.flux_to_mag("flux_g", zeropoint="nanomaggy"),         # 22.5
+    g_err=ap.fluxerr_to_magerr("flux_g_err", "flux_g"),
+    g_r=ap.flux_color("flux_g", "flux_r"),
+)
+
+# many bands at once; entries whose columns are missing are skipped
+lf.phot.add_mags({"g": "flux_g", "r": "flux_r", "z": "flux_z"}, zeropoint="nanomaggy")
+lf.phot.deredden({"g": 3.214, "r": 2.165}, ebv="ebv")          # adds g_0, r_0
+```
+
+`zeropoint` is a number, a unit name (`"Jy"`, `"uJy"`, `"nJy"`,
+`"nanomaggy"`...) or an expression such as `pl.col("zp")`.
+
+## HEALPix-partitioned Parquet
+
+```python
+from astro_polars.io import write_partitions, scan_hive
+
+write_partitions(df, "cat_hive/", nside=32, tag="chunk01")   # hpx32=<pix>/part-chunk01-<pix>.parquet
+lf = scan_hive("cat_hive/", cone=(150.1, 2.2, 1.0))          # reads only partitions touching the cone
+lf.sky.cone(150.1, 2.2, 1.0).collect()                       # exact cut
+```
+
 ## Plots
 
 ```python

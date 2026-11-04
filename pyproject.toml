@@ -5,12 +5,12 @@ build-backend = "hatchling.build"
 [project]
 name = "astro-polars"
 dynamic = ["version"]
-description = "Astronomy on Polars: cross-matching, sky selections, HEALPix, frame rotations and sky maps for large catalogues."
+description = "Astronomy on Polars: cross-matching, sky selections, HEALPix, frame rotations, photometry, survey pipelines and sky maps for large catalogues."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "GPL-3.0-or-later" }
 authors = [{ name = "Eduardo Balbinot" }]
-keywords = ["astronomy", "polars", "gaia", "healpix", "crossmatch", "euclid", "lsst", "catalogue"]
+keywords = ["astronomy", "polars", "gaia", "healpix", "crossmatch", "euclid", "lsst", "catalogue", "photometry"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
@@ -29,17 +29,25 @@ dependencies = [
   "polars>=1.30",
   "numpy>=1.22",
   "numba>=0.58",
+  "scipy>=1.8",
   "scikit-learn>=1.3",
   "hpgeom>=1.2",
 ]
 
 [project.optional-dependencies]
 viz = ["matplotlib>=3.8", "skyproj>=2.0"]
-fits = ["astropy>=5.0"]
+fits = [
+  "astropy>=5.0",
+  # no astropy release supports NumPy 2 on Python 3.9
+  "numpy<2; python_version < '3.10'",
+]
 all = ["astro-polars[viz,fits]"]
 test = ["pytest>=7"]
 docs = ["mkdocs-material>=9.5", "mkdocstrings[python]>=0.26"]
 dev = ["astro-polars[all,test,docs]", "ruff", "build"]
+
+[project.scripts]
+astro-polars = "astro_polars.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/balbinot/astro-polars"
