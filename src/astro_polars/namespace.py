@@ -88,20 +88,20 @@ class Sky:
     ):
         """Rotate into any frame given by a 3x3 matrix, e.g. a stream frame.
 
-        See :func:`astro_polars.coords.frame_from_pole` and
-        :data:`astro_polars.coords.GD1_KOPOSOV10`. Longitudes are wrapped to
+        See ``astro_polars.coords.frame_from_pole`` and
+        ``astro_polars.coords.GD1_KOPOSOV10``. Longitudes are wrapped to
         (-180, 180] by default, as is usual for stream coordinates.
         """
         return coords._add_rotated(self._df, matrix, lon, lat, out, pmlon, pmlat, wrap180)
 
     # -- catalogue operations -----------------------------------------------
     def crossmatch(self, other: pl.DataFrame | pl.LazyFrame, **kwargs) -> pl.LazyFrame:
-        """Cross-match against ``other``; see :func:`astro_polars.crossmatch`."""
+        """Cross-match against ``other``; see ``astro_polars.crossmatch``."""
         return crossmatch(self._df, other, **kwargs)
 
     def remove_duplicates(
         self, x: str = "ra", y: str = "dec", radius_arcsec: float = 1.0
     ) -> pl.DataFrame:
         """Drop sources with a neighbour closer than ``radius_arcsec``; see
-        :func:`astro_polars.remove_duplicates`."""
+        ``astro_polars.remove_duplicates``."""
         return remove_duplicates(self._df, x=x, y=y, radius_arcsec=radius_arcsec)

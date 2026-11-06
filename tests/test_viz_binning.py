@@ -2,7 +2,8 @@ import numpy as np
 import polars as pl
 import pytest
 
-from astro_polars.viz import healpix_map, heatmap, nside_to_order
+from astro_polars.healpix import nside_to_order
+from astro_polars.viz import healpix_map, heatmap
 
 
 def test_counts_match_histogram2d(rng):

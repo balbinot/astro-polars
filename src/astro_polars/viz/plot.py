@@ -10,7 +10,7 @@ from .._utils import require
 
 __all__ = ["TAB10", "use_style", "plot_heatmap", "skymap", "PROJECTIONS"]
 
-#: Matplotlib's tab10 colours, Eduardo's default colour cycle.
+#: Matplotlib's tab10 colours, the cycle set by ``use_style``.
 TAB10 = [
     "#1f77b4",
     "#ff7f0e",
@@ -58,7 +58,7 @@ def plot_heatmap(
     label: str | None = None,
     **imshow_kwargs: Any,
 ):
-    """Show the output of :func:`astro_polars.viz.heatmap` with ``imshow``.
+    """Show the output of ``astro_polars.viz.heatmap`` with ``imshow``.
 
     ``H`` is x-first (as returned by ``heatmap``); it is transposed here.
     Returns the ``AxesImage``.
@@ -103,7 +103,7 @@ def skymap(
     figsize=(10, 6),
     **kwargs: Any,
 ):
-    """Draw a HEALPix map with `skyproj <https://skyproj.readthedocs.io>`_.
+    """Draw a HEALPix map with [skyproj](https://skyproj.readthedocs.io).
 
     Parameters
     ----------
@@ -115,7 +115,7 @@ def skymap(
     nest
         Pixel ordering of ``data``.
     projection
-        A name from :data:`PROJECTIONS` (``mollweide``, ``mcbryde``, ``hammer``,
+        A name from ``PROJECTIONS`` (``mollweide``, ``mcbryde``, ``hammer``,
         ``des``...) or a skyproj class.
     ax
         Matplotlib axes; a new figure is made if ``None``.

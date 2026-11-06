@@ -29,5 +29,8 @@ expressions, for use inside `with_columns`, `filter` or `group_by`.
 Survey pipelines live in `astro_polars.surveys`; the first is
 [Euclid MER](euclid.md).
 
-Start with [Install](install.md) and the [Quick start](quickstart.md). The
+![Counts on a Mollweide projection in Galactic coordinates, synthetic catalogue](figures/sky_galactic.png)
+
+Start with [Install](install.md), the [Quick start](quickstart.md) and the
+[Gallery](gallery.md). The
 [Roadmap](roadmap.md) lists what comes next (HATS, more survey modules).

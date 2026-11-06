@@ -18,7 +18,7 @@
   or `astro_polars.viz.plot_heatmap`.
 - **Cross-match backends**: the default `method="kdtree"` searches 3D unit
   vectors by chord length (SciPy cKDTree, multithreaded; about 2 s for
-  1M x 1M sources on 4 cores). `method="balltree"` is Eduardo's original
-  scikit-learn BallTree with the haversine metric, which expects (lat, lon),
+  1M x 1M sources on 4 cores). `method="balltree"` uses
+  scikit-learn's BallTree with the haversine metric, which expects (lat, lon),
   so the coordinates are flipped before building it. Both return the same
   pairs.

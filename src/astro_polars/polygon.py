@@ -1,8 +1,7 @@
 """Point-in-polygon selection.
 
-Eduardo Balbinot's ray-casting test, compiled with numba and run in parallel
-(https://gist.github.com/balbinot/b8c6b18000363b16825c04d2d84146df). Points
-exactly on an edge or a vertex count as inside.
+A ray-casting test, compiled with numba and run in parallel. Points exactly
+on an edge or a vertex count as inside.
 
 Polygons are ``(N, 2)`` arrays of ``(x, y)`` vertices, given open or closed
 (first vertex repeated at the end).
@@ -25,7 +24,7 @@ def inpoly(polygon, x, y):
     """Ray-casting test for one point. Returns 0 (outside), 1 (inside) or 2 (on edge).
 
     ``polygon`` must be closed (first vertex repeated at the end); use
-    :func:`close_polygon` if unsure.
+    ``close_polygon`` if unsure.
     """
     length = len(polygon) - 1
     dy2 = y - polygon[0][1]
@@ -57,7 +56,7 @@ def inpoly(polygon, x, y):
 
 @njit(parallel=True, cache=True)
 def inpoly_parallel(x, y, polygon):
-    """Vectorised :func:`inpoly` over arrays ``x`` and ``y``. Returns a bool array."""
+    """Vectorised ``inpoly`` over arrays ``x`` and ``y``. Returns a bool array."""
     ln = len(x)
     D = np.empty(ln, dtype=numba.boolean)
     for i in numba.prange(ln):
@@ -86,7 +85,7 @@ def in_polygon(polygon, x: str = "x", y: str = "y") -> pl.Expr:
     """Boolean expression: is ``(x, y)`` inside ``polygon``? (numba backend)
 
     ``x`` and ``y`` are column names. Works on DataFrames and LazyFrames,
-    including streaming::
+    including streaming:
 
         lf.filter(in_polygon(poly, "g_r", "g"))
     """
@@ -103,9 +102,9 @@ def in_polygon(polygon, x: str = "x", y: str = "y") -> pl.Expr:
 
 
 def pinside(df, poly, x: str = "x", y: str = "y", name: str = "inside") -> pl.Expr:
-    """Eduardo's original interface: expression named ``name`` flagging points in ``poly``.
+    """Expression named ``name`` flagging points in ``poly`` (older interface).
 
     ``df`` is accepted for backwards compatibility and is not used. Prefer
-    :func:`in_polygon`.
+    ``in_polygon``.
     """
     return in_polygon(poly, x, y).alias(name)

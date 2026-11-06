@@ -2,7 +2,7 @@
 
 All magnitudes are AB unless you pass your own zero point. For a flux ``f``
 in some unit, ``mag = -2.5 log10(f) + zp`` with ``zp = -2.5 log10(unit / 3631 Jy)``.
-Common zero points are in :data:`AB_ZEROPOINTS`, e.g. 23.9 for microjansky
+Common zero points are in ``AB_ZEROPOINTS``, e.g. 23.9 for microjansky
 (Euclid MER) and 22.5 for nanomaggies (Legacy Surveys, SDSS).
 
 Non-positive fluxes give NaN or infinite magnitudes, as ``log10`` does; filter
@@ -66,7 +66,7 @@ def ab_zeropoint(unit: str | float) -> float:
 #: AB zero points by flux unit.
 AB_ZEROPOINTS = {u: ab_zeropoint(u) for u in _UNITS_JY}
 
-#: A zero point: a number, a unit name (see :func:`ab_zeropoint`) or an
+#: A zero point: a number, a unit name (see ``ab_zeropoint``) or an
 #: expression, e.g. ``pl.col("zp")`` for a per-row zero point.
 ZeroPoint = Union[float, str, pl.Expr]
 
@@ -89,7 +89,7 @@ def flux_to_mag(flux: IntoExpr, zeropoint: ZeroPoint = "uJy") -> pl.Expr:
 
 
 def mag_to_flux(mag: IntoExpr, zeropoint: ZeroPoint = "uJy") -> pl.Expr:
-    """Inverse of :func:`flux_to_mag`: ``10**(-0.4 (mag - zeropoint))``."""
+    """Inverse of ``flux_to_mag``: ``10**(-0.4 (mag - zeropoint))``."""
     return pl.lit(10.0).pow(-0.4 * (to_expr(mag) - _zp(zeropoint)))
 
 
@@ -99,7 +99,7 @@ def fluxerr_to_magerr(fluxerr: IntoExpr, flux: IntoExpr) -> pl.Expr:
 
 
 def magerr_to_fluxerr(magerr: IntoExpr, flux: IntoExpr) -> pl.Expr:
-    """Inverse of :func:`fluxerr_to_magerr`: ``magerr * flux / (2.5 / ln(10))``."""
+    """Inverse of ``fluxerr_to_magerr``: ``magerr * flux / (2.5 / ln(10))``."""
     return to_expr(magerr) * to_expr(flux) / MAGERR_FACTOR
 
 

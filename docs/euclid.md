@@ -2,9 +2,7 @@
 
 `astro_polars.surveys.euclid` turns Euclid MER final-catalogue tiles into
 magnitudes, colours and a quality-cut selection, and writes
-a whole download into one HEALPix-partitioned Parquet dataset. It is a port of
-Eduardo Balbinot's MER pipeline: on the same tiles it writes the same files,
-rows, values and dtypes.
+a whole download into one HEALPix-partitioned Parquet dataset.
 
 Reading FITS needs the `fits` extra:
 
@@ -83,6 +81,8 @@ lf.viz.healpix(nside=512, ipix="hpx4096", ipix_nside=4096, what="len")
 | horn | `horn_cut(a=0.6, b=27, c=1.5)` | keeps \|MUMAX_MINUS_MAG + 3\| ≤ a + exp((mag_VIS_auto − b) / c) |
 | depth | `magnitude_cut(27.5)` | `mag_VIS_auto < 27.5`, one row per `OBJECT_ID` |
 | HEALPix | `add_healpix(nside, map_nside=4096)` | `hpx4096` (kept in every file) and the partition key `hpx{nside}` |
+
+![Horn and magnitude cuts in MUMAX_MINUS_MAG vs mag_VIS_auto, synthetic data](figures/euclid_horn.png)
 
 Magnitudes are AB with zero point 23.9 (MER fluxes are in µJy). Entries of the
 maps whose columns are missing from a file are skipped, so the pipeline also

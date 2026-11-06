@@ -1,6 +1,6 @@
 """HEALPix hive-partitioned Parquet datasets.
 
-Layout::
+Layout:
 
     root/
       _manifest.json                       # what has been converted (see Manifest)

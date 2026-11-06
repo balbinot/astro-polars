@@ -5,7 +5,7 @@
 - `photometry`: `ab_zeropoint` and `AB_ZEROPOINTS` (Jy, mJy, uJy, nJy, nanomaggy), `flux_to_mag` / `mag_to_flux` with numeric, unit-name or per-row zero points, `fluxerr_to_magerr` / `magerr_to_fluxerr`, `flux_color`, `aperture_correction`, `deredden`; `df.phot` namespace (`add_mags`, `add_magerrs`, `add_colors`, `deredden`) that skips entries whose columns are missing.
 - `io.hive`: HEALPix hive-partitioned Parquet. `write_partitions` (atomic writes, one file per input and partition), `remove_partitions`, `scan_hive` with cone or pixel pruning, `Manifest` for restartable conversions.
 - `io.fits`: `read_fits_table`, FITS binary tables straight to Polars in native byte order (`fits` extra).
-- `surveys.euclid`: Euclid MER final-catalogue pipeline as composable steps (`add_mags`, `add_aper_mags`, `add_magerrs`, `add_visto_colors`, `clean`, `horn_cut`, `magnitude_cut`, `transform`), `add_healpix`, and `convert_tiles` from downloaded tiles to a hive dataset. Gives the same files, rows, values and dtypes as the original script.
+- `surveys.euclid`: Euclid MER final-catalogue pipeline as composable steps (`add_mags`, `add_aper_mags`, `add_magerrs`, `add_visto_colors`, `clean`, `horn_cut`, `magnitude_cut`, `transform`), `add_healpix`, and `convert_tiles` from downloaded tiles to a hive dataset.
 - Command line: `astro-polars euclid-hive --indir ... --outdir ... [--nside 32] [--force]`.
 - `crossmatch` uses a SciPy KD-tree by default (`method="balltree"` keeps the scikit-learn haversine BallTree); scipy is now a declared dependency.
 - The `fits` extra installs `numpy<2` on Python 3.9.

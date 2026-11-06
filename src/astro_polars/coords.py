@@ -40,7 +40,7 @@ ICRS_TO_GALACTIC = np.array(
         [-0.8676661490190047, -0.1980763734312015, +0.4559837761750669],
     ]
 )
-#: Galactic -> ICRS (transpose of :data:`ICRS_TO_GALACTIC`).
+#: Galactic -> ICRS (transpose of ``ICRS_TO_GALACTIC``).
 GALACTIC_TO_ICRS = ICRS_TO_GALACTIC.T.copy()
 
 #: ICRS -> GD-1 stream frame (phi1, phi2) of Koposov et al. (2010, ApJ 712, 260).
@@ -117,7 +117,6 @@ def rotate(lon: IntoExpr, lat: IntoExpr, matrix, wrap180: bool = False) -> pl.Ex
     """Rotate positions. Returns ``struct{lon, lat}`` in degrees.
 
     Longitude is in [0, 360), or (-180, 180] with ``wrap180=True``.
-    ::
 
         lf.with_columns(rotate("ra", "dec", ICRS_TO_GALACTIC).struct.unnest())
     """

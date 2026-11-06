@@ -10,8 +10,8 @@ Importing the package registers these Polars namespaces:
   extinction corrections from many columns at once.
 - ``pl.col(...).robust``: NMAD and robust z-scores.
 
-Subpackages: :mod:`astro_polars.io` (HEALPix hive Parquet datasets, FITS
-tables) and :mod:`astro_polars.surveys` (survey pipelines, e.g.
+Subpackages: ``astro_polars.io`` (HEALPix hive Parquet datasets, FITS
+tables) and ``astro_polars.surveys`` (survey pipelines, e.g.
 ``from astro_polars.surveys import euclid``).
 """
 

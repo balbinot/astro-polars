@@ -38,9 +38,9 @@ class Viz:
         """Bin and plot ``what(z)`` on an ``x``-``y`` grid with ``imshow``.
 
         Give ``nside`` to bin ``x``/``y`` as lon/lat on HEALPix and draw a sky map
-        instead (same as :meth:`healpix`). Empty bins are NaN (blank) unless
+        instead (same as ``healpix``). Empty bins are NaN (blank) unless
         ``fill`` is given. Other keywords go to ``imshow`` or to
-        :func:`~astro_polars.viz.skymap`.
+        ``astro_polars.viz.skymap``.
         """
         from .plot import plot_heatmap
 
@@ -120,7 +120,7 @@ class Viz:
             **kwargs,
         )
 
-    #: Alias of :meth:`healpix`.
+    #: Alias of ``healpix``.
     sky = healpix
 
 

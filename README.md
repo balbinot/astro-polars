@@ -53,6 +53,10 @@ lf.viz.heatmap("bp_rp", "phot_g_mean_mag", log=True)
 lf.viz.healpix("ra", "dec", nside=128, what="mean", z="parallax")
 ```
 
+![Sky map made with astro-polars from a synthetic catalogue](https://raw.githubusercontent.com/balbinot/astro-polars/main/docs/figures/sky_galactic.png)
+
+More figures in the [gallery](https://balbinot.github.io/astro-polars/gallery/).
+
 ## What is in it
 
 | Module | Contents |

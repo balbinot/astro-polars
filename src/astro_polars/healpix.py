@@ -1,6 +1,6 @@
 """HEALPix pixel indices as Polars expressions.
 
-Pixel computations use `hpgeom <https://github.com/LSSTDESC/hpgeom>`_ (C,
+Pixel computations use [hpgeom](https://github.com/LSSTDESC/hpgeom) (C,
 vectorised). Nested ordering is the default everywhere, because it makes
 changing resolution an integer division: the parent of nested pixel ``p`` at
 ``nside_in`` is ``p // (nside_in // nside_out)**2`` at ``nside_out``.
@@ -59,7 +59,6 @@ def healpix_index(lon: IntoExpr, lat: IntoExpr, nside: int, nest: bool = True) -
     """Pixel index of (lon, lat) in degrees, as an Int64 expression.
 
     Rows with a null coordinate give null. Latitudes must lie in [-90, 90].
-    ::
 
         lf.with_columns(hpx4096=healpix_index("ra", "dec", 4096))
     """

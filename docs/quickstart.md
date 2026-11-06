@@ -97,6 +97,10 @@ lf.sky.cone(150.1, 2.2, 1.0).collect()                       # exact cut
 
 ## Plots
 
+More examples, with figures, are in the [Gallery](gallery.md).
+
+![Counts on a Mollweide projection in Galactic coordinates](figures/sky_galactic.png)
+
 ```python
 lf.viz.heatmap("ra", "dec", shape=512, log=True)
 lf.viz.healpix("ra", "dec", nside=64, what="mean", z="g", projection="mcbryde")

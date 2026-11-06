@@ -1,13 +1,12 @@
 """Sky cross-matching and duplicate removal.
 
-Based on Eduardo Balbinot's ``crossmatch_polars``. Two tree backends give the
-same pairs:
+Two tree backends give the same pairs:
 
 - ``method="kdtree"`` (default): SciPy's cKDTree on 3D unit vectors, searched
   by chord length with a distance bound and multithreaded queries. Roughly an
   order of magnitude faster than the BallTree.
-- ``method="balltree"``: Eduardo's original scikit-learn BallTree with the
-  haversine metric, queried in parallel threads.
+- ``method="balltree"``: scikit-learn's BallTree with the haversine metric,
+  queried in parallel threads.
 """
 
 from __future__ import annotations
@@ -56,7 +55,7 @@ def _match_kdtree(c1: np.ndarray, c2: np.ndarray, k: int, radius_arcsec: float, 
 
 
 def _match_balltree(c1: np.ndarray, c2: np.ndarray, k: int, n_jobs: int):
-    """Eduardo's BallTree (haversine) query; returns (separation_arcsec, idx)."""
+    """BallTree (haversine) query; returns (separation_arcsec, idx)."""
     from sklearn.neighbors import BallTree
 
     # haversine in scikit-learn expects (lat, lon) in radians, hence the flip.
@@ -207,7 +206,7 @@ def crossmatch(
     return out.select([*names1, *names2, "separation", "multiplicity"])
 
 
-#: Eduardo's original name, kept as an alias.
+#: Alias of ``crossmatch``.
 crossmatch_polars = crossmatch
 
 

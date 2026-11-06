@@ -16,7 +16,7 @@ from .._utils import collect as _collect
 from ..healpix import degrade, healpix_index, nside_to_order
 from ..robust import K_NMAD
 
-__all__ = ["AGGREGATIONS", "heatmap", "healpix_map", "nside_to_order"]
+__all__ = ["AGGREGATIONS", "heatmap", "healpix_map"]
 
 Frame = Union[pl.DataFrame, pl.LazyFrame]
 Lims = Optional[Tuple[Optional[Tuple[float, float]], Optional[Tuple[float, float]]]]
@@ -92,7 +92,7 @@ def heatmap(
         Value for empty bins. Use ``np.nan`` for mean or median maps.
     nside, nest, ipix, ipix_nside
         Give ``nside`` to bin on HEALPix pixels instead of a grid; see
-        :func:`healpix_map`.
+        ``healpix_map``.
 
     Returns
     -------
@@ -100,7 +100,7 @@ def heatmap(
         Grid mode: ``H`` has shape ``(nx, ny)`` (x first, like
         ``numpy.histogram2d``) and ``extent = [x0, x1, y0, y1]``. Show it with
         ``plt.imshow(H.T, origin="lower", extent=extent)`` or
-        :func:`astro_polars.viz.plot_heatmap`.
+        ``astro_polars.viz.plot_heatmap``.
     numpy.ndarray
         HEALPix mode: a full-sky map of length ``12 * nside**2``.
     """
@@ -203,7 +203,7 @@ def healpix_map(
     nside
         HEALPix resolution of the output map (power of 2).
     what, z
-        Aggregation and the column it applies to, as in :func:`heatmap`.
+        Aggregation and the column it applies to, as in ``heatmap``.
     fill
         Value for empty pixels in the dense map. ``np.nan`` hides them in plots.
     nest

@@ -61,9 +61,9 @@ def angular_separation(lon1, lat1, lon2, lat2):
 def angsep(lon1: IntoExpr, lat1: IntoExpr, lon2: IntoExpr, lat2: IntoExpr) -> pl.Expr:
     """Polars expression for the angular separation in degrees (Vincenty).
 
-    Same formula as :func:`angular_separation`, evaluated natively by Polars
+    Same formula as ``angular_separation``, evaluated natively by Polars
     so it is lazy, parallel and streams. Arguments are column names,
-    expressions or numbers (for example a fixed position)::
+    expressions or numbers (for example a fixed position):
 
         df.with_columns(sep=angsep("ra", "dec", 150.1, 2.2))
     """
@@ -84,7 +84,7 @@ def in_cone(lon: IntoExpr, lat: IntoExpr, lon0: float, lat0: float, radius: floa
     """Boolean expression: is the point within ``radius`` degrees of (lon0, lat0)?
 
     A cheap latitude pre-cut is applied first so most rows skip the
-    trigonometry::
+    trigonometry:
 
         lf.filter(in_cone("ra", "dec", 10.68, 41.27, radius=0.5))
     """

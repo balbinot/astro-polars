@@ -1,10 +1,10 @@
 """Euclid MER final catalogues: magnitudes, colours, quality cuts and HEALPix datasets.
 
-A port of Eduardo Balbinot's MER-tile pipeline. The column lists, maps and
-cut parameters below are his; every step is a function on a DataFrame or
-LazyFrame, and :func:`transform` runs them in the original order.
+The column lists, maps and cut parameters are module constants. Every step
+is a function on a DataFrame or LazyFrame, and ``transform`` runs them
+in order.
 
-Typical use::
+Typical use:
 
     from astro_polars.surveys import euclid
 
@@ -240,7 +240,7 @@ MAP_NSIDE = 4096
 
 
 def read_mer(path: str | os.PathLike, columns=KEEPCOLS, warn_missing: bool = True) -> pl.DataFrame:
-    """Read a MER final catalogue FITS file, keeping ``columns`` (default :data:`KEEPCOLS`).
+    """Read a MER final catalogue FITS file, keeping ``columns`` (default ``KEEPCOLS``).
 
     Columns missing from the file are skipped with a warning. Needs the ``fits`` extra.
     """
@@ -259,8 +259,8 @@ def _names(df) -> set[str]:
 
 
 def _f64(x: float) -> pl.Expr:
-    # Magnitudes and errors come out as Float64, as in the original pipeline,
-    # so datasets written by either version share one schema.
+    # Magnitudes and errors are Float64 whatever the flux dtype, so that
+    # datasets written at different times share one schema.
     return pl.lit(x, dtype=pl.Float64)
 
 
@@ -291,7 +291,7 @@ def add_aper_mags(df, mapping=APER_MAG_MAP, zeropoint: float = ZPT):
 
     For each ``stem: fluxstem`` adds ``{stem}_{n}fwhm`` from
     ``{fluxstem}_{n}FWHM_APER * corr{n}``, n = 1, 2. Run
-    :func:`add_aperture_corrections` first.
+    ``add_aperture_corrections`` first.
     """
     have = _names(df)
     exprs = []
@@ -344,7 +344,7 @@ def horn_mask(
 
 
 def horn_cut(df, a: float = HORN_A, b: float = HORN_B, c: float = HORN_C):
-    """Keep rows inside the horn (see :func:`horn_mask`)."""
+    """Keep rows inside the horn (see ``horn_mask``)."""
     return df.filter(horn_mask(a, b, c))
 
 
@@ -361,9 +361,9 @@ def transform(
 ):
     """The full MER pipeline: magnitudes, errors, colours, then the quality cuts.
 
-    Steps, in order: :func:`add_aperture_corrections`, :func:`add_mags`,
-    :func:`add_aper_mags`, :func:`add_magerrs`, :func:`add_visto_colors`,
-    :func:`clean`, :func:`horn_cut` and :func:`magnitude_cut`. Pass
+    Steps, in order: ``add_aperture_corrections``, ``add_mags``,
+    ``add_aper_mags``, ``add_magerrs``, ``add_visto_colors``,
+    ``clean``, ``horn_cut`` and ``magnitude_cut``. Pass
     ``horn=None`` or ``mag_vis_auto_max=None`` to skip those cuts. Works on
     DataFrames and LazyFrames.
     """
@@ -420,13 +420,13 @@ def convert_tiles(
 
     Expects ``indir/<tile>/EUC_MER_FINAL-CAT_TILE*.fits*``. For each file not
     already in ``outdir/_manifest.json`` (or every file with ``force``): read
-    :data:`KEEPCOLS`, run ``transform_fn`` (default :func:`transform`), add
+    ``KEEPCOLS``, run ``transform_fn`` (default ``transform``), add
     ``hpx{map_nside}`` and write one Parquet file per ``hpx{nside}`` partition,
     tagged with the tile directory name. Files from an earlier attempt at the
     same tile are removed first, and the manifest is saved after each tile,
     so the run can be interrupted and resumed.
 
-    Read the result with :func:`astro_polars.io.scan_hive` or
+    Read the result with ``astro_polars.io.scan_hive`` or
     ``pl.scan_parquet(f"{outdir}/**/*.parquet", hive_partitioning=True)``.
 
     Returns
