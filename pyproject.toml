@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "GPL-3.0-or-later" }
 authors = [{ name = "Eduardo Balbinot" }]
-keywords = ["astronomy", "polars", "gaia", "healpix", "crossmatch", "euclid", "lsst", "catalogue", "photometry"]
+keywords = ["astronomy", "polars", "gaia", "healpix", "crossmatch", "galactic dynamics", "actions", "euclid", "lsst", "catalogue", "photometry"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
@@ -41,7 +41,10 @@ fits = [
   # no astropy release supports NumPy 2 on Python 3.9
   "numpy<2; python_version < '3.10'",
 ]
-all = ["astro-polars[viz,fits]"]
+# AGAMA builds from source (C++); see the install docs
+dynamics = ["agama>=1.0"]
+gaia = ["gaiadr3-zeropoint>=0.0.5"]
+all = ["astro-polars[viz,fits,gaia]"]
 test = ["pytest>=7"]
 docs = ["mkdocs-material>=9.5", "mkdocstrings[python]>=0.26"]
 dev = ["astro-polars[all,test,docs]", "ruff", "build"]

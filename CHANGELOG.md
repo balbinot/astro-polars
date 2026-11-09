@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- `galactic`: `SolarParameters` (R0, z0, U, V, W, vcirc; settable default), `galactocentric` and `from_galactocentric` (astropy-compatible frame, including the z0 tilt), `heliocentric_cartesian`, `reflex_correct` (proper motions in the Galactic standard of rest, ICRS or Galactic input), `vgsr`.
+- `dynamics`: `df.galactic` namespace with `from_observed`, `to_observed`, `reflex_correct`, `vgsr` and `calc`, which resolves dependencies between ~60 quantities (cylindrical and spherical kinematics, angular momenta, energies, actions, angles, frequencies, pericentre, apocentre, eccentricity, circular-orbit radius, period and angular momentum, circularity, action-diamond coordinates) starting from observables or Galactocentric phase space. Potential-based quantities use AGAMA (`dynamics` extra) through `GalaxyModel`, with cached action finders; `available()` lists every quantity, and the names of polars_astro are accepted as aliases.
+- `surveys.gaia`: `correct_radial_velocity` (Katz+23, Blomme+23), `correct_radial_velocity_error` (Babusiaux+23), `estimate_grvs`, `extinction` and `deredden` (Gaia Collaboration 2018 coefficients), `dodd23_quality`, `lindegren21_zero_point` (`gaia` extra), `distance_from_parallax` and the `process` pipeline.
+- `df.sky.galactic_pm_errors`: Galactic proper-motion errors and correlation from Gaia's covariance.
+
 ## 0.2.0 (unreleased)
 
 - `photometry`: `ab_zeropoint` and `AB_ZEROPOINTS` (Jy, mJy, uJy, nJy, nanomaggy), `flux_to_mag` / `mag_to_flux` with numeric, unit-name or per-row zero points, `fluxerr_to_magerr` / `magerr_to_fluxerr`, `flux_color`, `aperture_correction`, `deredden`; `df.phot` namespace (`add_mags`, `add_magerrs`, `add_colors`, `deredden`) that skips entries whose columns are missing.

@@ -14,20 +14,21 @@ lf = pl.scan_parquet("survey/**/*.parquet")
 lf.sky.cone(150.1, 2.2, radius=1.0).sky.to_galactic().collect()
 ```
 
-Importing `astro_polars` adds four namespaces to Polars:
+Importing `astro_polars` adds five namespaces to Polars:
 
 | Namespace | On | What |
 |---|---|---|
 | `.sky` | DataFrame, LazyFrame | cones, polygons, separations, HEALPix, frame rotations, cross-match, duplicates |
 | `.phot` | DataFrame, LazyFrame | magnitudes, magnitude errors, colours and extinction for many bands at once |
+| `.galactic` | DataFrame, LazyFrame | Galactocentric coordinates, reflex correction, angular momenta, energies and actions (`calc`) |
 | `.viz` | DataFrame, LazyFrame | heatmaps on a grid or on HEALPix, sky maps with skyproj |
 | `.robust` | expressions | NMAD and robust z-scores |
 
 Everything is also available as plain functions returning Polars
 expressions, for use inside `with_columns`, `filter` or `group_by`.
 
-Survey pipelines live in `astro_polars.surveys`; the first is
-[Euclid MER](euclid.md).
+Survey pipelines live in `astro_polars.surveys`:
+[Euclid MER](euclid.md) and Gaia DR3 (see [Galactic dynamics](dynamics.md)).
 
 ![Counts on a Mollweide projection in Galactic coordinates, synthetic catalogue](figures/sky_galactic.png)
 

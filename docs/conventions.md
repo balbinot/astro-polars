@@ -22,3 +22,7 @@
   scikit-learn's BallTree with the haversine metric, which expects (lat, lon),
   so the coordinates are flipped before building it. Both return the same
   pairs.
+- **Galactocentric frame** as astropy's `Galactocentric`: Sun at `X ~ -R0`,
+  `Y` towards Galactic rotation, `Z` to the North Galactic Pole; kpc and
+  km/s. `vphi` and `Lz` (`L = -(r x v)`) are positive for prograde orbits,
+  and AGAMA's `Jphi` is flipped to match. See [Galactic dynamics](dynamics.md).

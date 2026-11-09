@@ -26,6 +26,7 @@ nav:
   - Gallery: gallery.md
   - Conventions: conventions.md
   - Euclid MER: euclid.md
+  - Galactic dynamics: dynamics.md
   - API:
       - Sky namespace: api/namespace.md
       - Sphere: api/sphere.md
@@ -36,7 +37,10 @@ nav:
       - Robust statistics: api/robust.md
       - Photometry: api/photometry.md
       - Input and output: api/io.md
+      - Galactocentric frame: api/galactic.md
+      - Dynamics: api/dynamics.md
       - Euclid: api/euclid.md
+      - Gaia: api/gaia.md
       - Visualisation: api/viz.md
   - Roadmap: roadmap.md
 

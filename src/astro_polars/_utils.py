@@ -16,6 +16,8 @@ _EXTRAS = {
     "cycler": "viz",
     "skyproj": "viz",
     "astropy": "fits",
+    "agama": "dynamics",
+    "zero_point": "gaia",
 }
 
 
