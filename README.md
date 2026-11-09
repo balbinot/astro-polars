@@ -14,7 +14,8 @@ Documentation: https://balbinot.github.io/astro-polars/
 pip install astro-polars            # core
 pip install "astro-polars[viz]"     # + matplotlib and skyproj for plots
 pip install "astro-polars[fits]"    # + astropy, to read FITS tables (Euclid MER)
-pip install "astro-polars[all]"     # every optional feature
+pip install "astro-polars[dynamics]" # + AGAMA, for energies and actions
+pip install "astro-polars[all]"     # viz, fits and gaia extras
 ```
 
 Development version:
@@ -51,6 +52,11 @@ lf.phot.add_mags({"g": "flux_g", "r": "flux_r"}, zeropoint="nanomaggy")
 # heatmaps and sky maps, binned in streaming Polars
 lf.viz.heatmap("bp_rp", "phot_g_mean_mag", log=True)
 lf.viz.healpix("ra", "dec", nside=128, what="mean", z="parallax")
+
+# Galactocentric kinematics and dynamics (energies and actions with AGAMA)
+lf.with_columns(distance=1 / pl.col("parallax")).galactic.calc(
+    ["R", "vphi", "Lz", "E", "JR", "Jz", "Jphi"], potential="McMillan17"
+)
 ```
 
 ![Sky map made with astro-polars from a synthetic catalogue](https://raw.githubusercontent.com/balbinot/astro-polars/main/docs/figures/sky_galactic.png)
@@ -69,6 +75,9 @@ More figures in the [gallery](https://balbinot.github.io/astro-polars/gallery/).
 | `astro_polars.robust` | `pl.col(x).robust.nmad()`, `.robust.zscore()` |
 | `astro_polars.photometry` | AB zero points, magnitudes, errors, colours, aperture corrections, extinction; `df.phot` namespace |
 | `astro_polars.io` | HEALPix hive-partitioned Parquet (`write_partitions`, `scan_hive` with cone pruning, `Manifest`), FITS tables |
+| `astro_polars.galactic` | Galactocentric positions and velocities (astropy-compatible frame), solar reflex correction, `vgsr` |
+| `astro_polars.dynamics` | `df.galactic.calc`: cylindrical and spherical kinematics, angular momenta, energies, actions, angles, frequencies, pericentre, apocentre, circularity (AGAMA) |
+| `astro_polars.surveys.gaia` | Gaia DR3 radial-velocity and error corrections, extinction, Dodd+23 quality cuts, Lindegren+21 zero point, `process` pipeline |
 | `astro_polars.surveys.euclid` | Euclid MER final-catalogue pipeline: magnitudes, colours, horn and magnitude cuts, tiles to a hive dataset |
 | `astro_polars.viz` | `heatmap` on grids or HEALPix, `skymap` with skyproj, `df.viz` namespace |
 
@@ -79,7 +88,7 @@ astro-polars euclid-hive --indir tiles/ --outdir mer_hive/ --nside 32
 ```
 
 Planned next: HATS read and write, survey modules (Gaia DR4, 4MOST, DESI, DES,
-LSST). See the [roadmap](https://balbinot.github.io/astro-polars/roadmap/).
+LSST), orbit integration. See the [roadmap](https://balbinot.github.io/astro-polars/roadmap/).
 
 ## Licence
 

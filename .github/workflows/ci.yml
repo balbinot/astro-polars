@@ -45,11 +45,30 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: pip
       - name: Install
-        run: python -m pip install ".[test,viz,fits]"
+        run: python -m pip install ".[test,viz,fits,gaia]"
       - name: Test
         run: python -m pytest -v
         env:
           MPLBACKEND: Agg
+
+  dynamics:
+    name: test with AGAMA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Build AGAMA
+        run: |
+          python -m pip install numpy setuptools wheel
+          git clone --depth 1 https://github.com/GalacticDynamics-Oxford/Agama.git agama-src
+          python -m pip install ./agama-src --no-build-isolation --config-settings --build-option=--yes
+      - name: Install
+        run: python -m pip install ".[test,fits,gaia]"
+      - name: Test
+        run: python -m pytest -v tests/test_dynamics.py tests/test_galactic.py tests/test_gaia.py
 
   build:
     runs-on: ubuntu-latest

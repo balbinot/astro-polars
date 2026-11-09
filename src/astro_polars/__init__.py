@@ -8,14 +8,29 @@ Importing the package registers these Polars namespaces:
   ``viz`` extra).
 - ``df.phot`` / ``lf.phot``: magnitudes, magnitude errors, colours and
   extinction corrections from many columns at once.
+- ``df.galactic`` / ``lf.galactic``: Galactocentric positions and
+  velocities, solar reflex correction, and ``calc`` for kinematic and
+  dynamical quantities (angular momenta, energies, actions with AGAMA).
 - ``pl.col(...).robust``: NMAD and robust z-scores.
 
 Subpackages: ``astro_polars.io`` (HEALPix hive Parquet datasets, FITS
 tables) and ``astro_polars.surveys`` (survey pipelines, e.g.
-``from astro_polars.surveys import euclid``).
+``from astro_polars.surveys import euclid, gaia``).
 """
 
-from . import coords, healpix, io, photometry, polygon, robust, sphere, surveys, viz
+from . import (
+    coords,
+    dynamics,
+    galactic,
+    healpix,
+    io,
+    photometry,
+    polygon,
+    robust,
+    sphere,
+    surveys,
+    viz,
+)
 from . import crossmatch as _crossmatch_module
 from ._version import __version__
 from .coords import (
@@ -28,6 +43,8 @@ from .coords import (
     rotate_pm_errors,
 )
 from .crossmatch import crossmatch, crossmatch_polars, remove_duplicates
+from .dynamics import Galactic
+from .galactic import SolarParameters, galactocentric, reflex_correct
 from .healpix import cone_pixels, degrade, gaia_source_id_to_healpix, healpix_index
 from .namespace import Sky
 from .photometry import (
@@ -53,6 +70,8 @@ __all__ = [
     "__version__",
     # modules
     "coords",
+    "dynamics",
+    "galactic",
     "healpix",
     "io",
     "photometry",
@@ -88,6 +107,10 @@ __all__ = [
     "rotate",
     "rotate_pm",
     "rotate_pm_errors",
+    # galactic
+    "SolarParameters",
+    "galactocentric",
+    "reflex_correct",
     # photometry
     "AB_ZEROPOINTS",
     "MAGERR_FACTOR",
@@ -105,5 +128,6 @@ __all__ = [
     "zscore",
     # namespaces
     "Sky",
+    "Galactic",
     "Photometry",
 ]

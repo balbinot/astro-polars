@@ -64,6 +64,34 @@ class Sky:
             self._df, coords.ICRS_TO_GALACTIC, ra, dec, out, pmra, pmdec, wrap180
         )
 
+    def galactic_pm_errors(
+        self,
+        ra: str = "ra",
+        dec: str = "dec",
+        pmra_error: str = "pmra_error",
+        pmdec_error: str = "pmdec_error",
+        pm_corr: str | None = "pmra_pmdec_corr",
+        out: Sequence[str] = ("pml_error", "pmb_error", "pml_pmb_corr"),
+    ):
+        """Add Galactic proper-motion uncertainties and their correlation.
+
+        The ICRS covariance (Gaia's ``pmra_error``, ``pmdec_error``,
+        ``pmra_pmdec_corr``) is rotated exactly; ``pm_corr`` may be None or a
+        missing column for uncorrelated errors.
+        """
+        names = self._df.collect_schema().names()
+        corr = pm_corr if pm_corr is not None and pm_corr in names else None
+        s = coords.rotate_pm_errors(ra, dec, pmra_error, pmdec_error, corr, coords.ICRS_TO_GALACTIC)
+        tmp = "__ap_pmerr"
+        return (
+            self._df.with_columns(s.alias(tmp))
+            .with_columns(
+                pl.col(tmp).struct.field(f).alias(o)
+                for f, o in zip(("pmlon_error", "pmlat_error", "pm_corr"), out)
+            )
+            .drop(tmp)
+        )
+
     def to_equatorial(
         self,
         l: str = "l",  # noqa: E741

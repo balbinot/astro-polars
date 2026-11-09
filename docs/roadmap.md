@@ -82,7 +82,7 @@ quality cuts, and readers for the survey's distribution format.
 
 | Module | Notes |
 |---|---|
-| `gaia` | DR3 now: quality cuts, `source_id` HEALPix (already in `healpix`), parallax zero point. DR4: schema, epoch astrometry and photometry, covariance-based errors, once the data model is published. |
+| `gaia` | DR3 done: radial-velocity and error corrections, extinction, Dodd+23 cuts, Lindegren+21 zero point, `process`. DR4: schema, epoch astrometry and photometry, covariance-based errors, once the data model is published. |
 | `fourmost` | 4MOST target catalogues and spectroscopic products. |
 | `desi` | Legacy Surveys nanomaggie fluxes (zero point 22.5), DESI redshift catalogues. |
 | `des` | DES Y6 Gold columns, flags and extinction. |
@@ -91,10 +91,13 @@ quality cuts, and readers for the survey's distribution format.
 
 ## Streams and dynamics
 
-- Already: `frame_from_pole`, `GD1_KOPOSOV10`, `df.sky.to_frame`.
-- Next: reflex-motion correction (proper motions in the Galactic standard of
-  rest) and Galactocentric positions and velocities with configurable solar
-  parameters; a stream-track lookup from `galstreams` as an optional extra.
+- Done: `frame_from_pole`, `GD1_KOPOSOV10`, `df.sky.to_frame`; Galactocentric
+  positions and velocities with configurable solar parameters, reflex-motion
+  correction, `vgsr`, and `df.galactic.calc` with AGAMA energies, actions,
+  angles, frequencies and orbit extent ([Galactic dynamics](dynamics.md)).
+- Next: orbit integration (`zmax`, orbit-averaged quantities) through
+  `agama.orbit`, Monte Carlo error propagation from the Gaia covariances, and a
+  stream-track lookup from `galstreams` as an optional extra.
 
 ## Rust
 
