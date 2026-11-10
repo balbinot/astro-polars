@@ -46,3 +46,9 @@ def test_cone_pixels_cover_cone(sky):
     pix = ap.cone_pixels(40.0, -20.0, 5.0, nside=64)
     inside = sky.sky.cone(40.0, -20.0, 5.0).sky.add_healpix(64)
     assert set(inside["hpx64"].to_list()) <= set(pix.tolist())
+
+
+def test_nan_and_inf_give_null():
+    df = pl.DataFrame({"ra": [10.0, float("nan"), float("inf")], "dec": [0.0, 5.0, 5.0]})
+    out = df.select(ap.healpix_index("ra", "dec", 32)).to_series()
+    assert out.null_count() == 2 and out[0] is not None

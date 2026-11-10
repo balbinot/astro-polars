@@ -196,3 +196,37 @@ def test_namespace_remove_duplicates():
     df = _line([0, 0.3, 5], g=[1.0, 3.0, 5.0])
     assert df.sky.remove_duplicates(agg="mean")["g"].to_list() == [2.0, 5.0]
     assert df.sky.find_duplicates()["dup_n"].to_list() == [2, 2, 1]
+
+
+@pytest.mark.parametrize("method", ["kdtree", "balltree"])
+def test_non_finite_coordinates_never_match(cats, method):
+    cat1, cat2 = cats
+    bad1 = cat1.with_columns(
+        pl.when(pl.col("id") == 0).then(None).otherwise("ra").alias("ra"),
+        pl.when(pl.col("id") == 1).then(float("nan")).otherwise("dec").alias("dec"),
+    )
+    bad2 = cat2.with_columns(
+        pl.when(pl.col("oid") == 100_002).then(float("inf")).otherwise("RA").alias("RA")
+    )
+    kw = dict(x2="RA", y2="DEC", radius_arcsec=0.5, method=method)
+    good = crossmatch(cat1, cat2, how="inner", **kw).collect()
+    out = crossmatch(bad1, bad2, how="inner", **kw).collect()
+    assert set(out["id"]) == set(good["id"]) - {0, 1, 2}
+    left = crossmatch(bad1, bad2, how="left", **kw).collect()
+    assert left.height == cat1.height
+    assert left.filter(pl.col("id").is_in([0, 1, 2]))["oid"].null_count() == 3
+
+
+@pytest.mark.parametrize("method", ["kdtree", "balltree"])
+def test_duplicates_with_non_finite_coordinates(method):
+    df = pl.DataFrame({"ra": [10.0, 10.0, None, float("nan")], "dec": [0.0, 1e-4, 0.0, 0.0]})
+    out = find_duplicates(df, method=method)
+    assert out["dup_n"].to_list() == [2, 2, 1, 1]
+    assert remove_duplicates(df, method=method).height == 3
+
+
+def test_remove_duplicates_agg_one_coordinate():
+    df = pl.DataFrame({"ra": [10.0, 10.0001], "dec": [0.0, 0.0], "g": [1.0, 3.0]})
+    out = remove_duplicates(df, agg={"ra": "min", "g": "mean"})
+    assert out.columns == ["ra", "dec", "g"]
+    assert out["ra"][0] == 10.0 and out["dec"][0] == pytest.approx(0.0) and out["g"][0] == 2.0

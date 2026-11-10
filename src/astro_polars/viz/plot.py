@@ -70,7 +70,10 @@ def plot_heatmap(
     ax = ax if ax is not None else plt.gca()
     kw = dict(origin="lower", extent=extent, aspect="auto", interpolation="nearest")
     if log:
-        kw["norm"] = LogNorm()
+        # matplotlib refuses vmin/vmax next to a norm, so they go into the norm
+        vmin = imshow_kwargs.pop("vmin", None)
+        vmax = imshow_kwargs.pop("vmax", None)
+        kw["norm"] = LogNorm(vmin=vmin, vmax=vmax)
     kw.update(imshow_kwargs)
     im = ax.imshow(np.asarray(H).T, **kw)
     if colorbar:
@@ -140,7 +143,9 @@ def skymap(
     if ax is None:
         _, ax = plt.subplots(figsize=figsize)
     sp = cls(ax=ax, lon_0=lon_0, galactic=galactic)
-    norm = "log" if log else kwargs.pop("norm", "linear")
+    norm = kwargs.pop("norm", "linear")
+    if log:
+        norm = "log"
 
     if isinstance(data, tuple):
         if nside is None:

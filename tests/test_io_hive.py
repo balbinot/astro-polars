@@ -105,3 +105,18 @@ def test_manifest(tmp_path):
 
     src.write_bytes(b"x" * 11)  # a re-download with a different size is redone
     assert not again.is_done(src)
+
+
+def test_rows_without_partition_raise(tmp_path, cat):
+    bad = cat.with_columns(pl.when(pl.col("id") == 3).then(None).otherwise("ra").alias("ra"))
+    with pytest.raises(ValueError, match="no hpx32 partition"):
+        write_partitions(bad, tmp_path, nside=32, tag="t")
+
+
+def test_remove_partitions_matches_tag_exactly(tmp_path, cat):
+    write_partitions(cat, tmp_path, nside=8, tag="a")
+    write_partitions(cat, tmp_path, nside=8, tag="a-b")
+    n_ab = len([f for f in _files(tmp_path) if "part-a-b-" in f])
+    assert remove_partitions(tmp_path, 8, "a") == n_ab
+    left = _files(tmp_path)
+    assert len(left) == n_ab and all("part-a-b-" in f for f in left)

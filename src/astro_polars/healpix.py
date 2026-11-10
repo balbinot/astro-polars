@@ -58,7 +58,8 @@ def pixel_area(nside: int) -> float:
 def healpix_index(lon: IntoExpr, lat: IntoExpr, nside: int, nest: bool = True) -> pl.Expr:
     """Pixel index of (lon, lat) in degrees, as an Int64 expression.
 
-    Rows with a null coordinate give null. Latitudes must lie in [-90, 90].
+    Rows with a null, NaN or infinite coordinate give null. Latitudes must
+    lie in [-90, 90].
 
         lf.with_columns(hpx4096=healpix_index("ra", "dec", 4096))
     """
@@ -70,7 +71,7 @@ def healpix_index(lon: IntoExpr, lat: IntoExpr, nside: int, nest: bool = True) -
     def _batch(s: pl.Series) -> pl.Series:
         lo = s.struct.field("lon")
         la = s.struct.field("lat")
-        ok = (lo.is_not_null() & la.is_not_null()).to_numpy()
+        ok = (lo.is_finite() & la.is_finite()).fill_null(False).to_numpy()
         out = np.zeros(len(s), dtype=np.int64)
         if ok.any():
             out[ok] = hpgeom.angle_to_pixel(

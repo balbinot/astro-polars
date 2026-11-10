@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+Fixes from an audit against astropy, healpy, matplotlib and the papers:
+
+- `surveys.gaia.estimate_grvs` added the polynomial to G instead of G_RP (Gaia Collaboration 2018, Eqs. 2 and 3 give `G_RVS - G_RP`), so estimates were too faint by `G - G_RP` (0.1 to 1.7 mag).
+- `crossmatch`, `find_duplicates` and `remove_duplicates` no longer fail on null, NaN or infinite coordinates; those rows never match and stay in groups of one.
+- `healpix_index` returns null for NaN or infinite coordinates instead of an arbitrary pixel.
+- `io.hive.write_partitions` raises when rows have no partition pixel, instead of writing an `hpx32=None` directory that `scan_hive` never reads. `remove_partitions` only removes files of exactly the given tag.
+- `remove_duplicates(agg=...)` that aggregates only one of `x`, `y` no longer drops the other; it gets the centroid value.
+- `dynamics`: distances from parallax (`calc("distance")`, `from_observed(parallax=...)`) are null for non-positive parallaxes, as in `surveys.gaia.distance_from_parallax`.
+- `viz.plot_heatmap(log=True)` accepts `vmin`/`vmax`; `viz.skymap(log=True)` no longer fails when `norm` is also passed.
+
 - `remove_duplicates` now groups close sources friends-of-friends. The previous nearest-neighbour version could keep close pairs inside triples and quadruples (A=0", C=0.45", B=0.9" kept A and B at 1"). New `priority`/`descending` pick the surviving row, `agg` returns group statistics (`"mean"`, `"median"`, ..., a `{column: statistic}` dict or Polars expressions) with the spherical centroid as position, and `size` adds the group size. New `find_duplicates` labels the groups. Both are on `df.sky`.
 - `galactic`: `SolarParameters` (R0, z0, U, V, W, vcirc; settable default), `galactocentric` and `from_galactocentric` (astropy-compatible frame, including the z0 tilt), `heliocentric_cartesian`, `reflex_correct` (proper motions in the Galactic standard of rest, ICRS or Galactic input), `vgsr`.
 - `dynamics`: `df.galactic` namespace with `from_observed`, `to_observed`, `reflex_correct`, `vgsr` and `calc`, which resolves dependencies between ~60 quantities (cylindrical and spherical kinematics, angular momenta, energies, actions, angles, frequencies, pericentre, apocentre, eccentricity, circular-orbit radius, period and angular momentum, circularity, action-diamond coordinates) starting from observables or Galactocentric phase space. Potential-based quantities use AGAMA (`dynamics` extra) through `GalaxyModel`, with cached action finders; `available()` lists every quantity, and the names of polars_astro are accepted as aliases.

@@ -33,6 +33,8 @@ __all__ = [
 ]
 
 #: ICRS -> Galactic rotation (Hipparcos catalogue, ESA 1997, Vol. 1, eq. 1.5.11).
+#: This is the definition Gaia uses for its ``l, b``; astropy's ``Galactic``
+#: frame goes through FK5 and differs from it by about 25 mas.
 ICRS_TO_GALACTIC = np.array(
     [
         [-0.0548755604162154, -0.8734370902348850, -0.4838350155487132],

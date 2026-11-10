@@ -140,6 +140,13 @@ def write_partitions(
     if key not in df.columns:
         df = df.with_columns(_partition_expr(df, nside, lon, lat, ipix, ipix_nside).alias(key))
 
+    n_bad = df[key].null_count()
+    if n_bad:
+        raise ValueError(
+            f"{n_bad} rows have no {key} partition (null, NaN or infinite coordinates); "
+            "drop or fix them before writing"
+        )
+
     root = Path(root)
     n = 0
     for (pix,), part in df.partition_by(key, as_dict=True).items():
@@ -154,8 +161,18 @@ def write_partitions(
 
 
 def remove_partitions(root: str | os.PathLike, nside: int, tag: str) -> int:
-    """Delete every file written for ``tag`` (to redo one input). Returns the count."""
-    stale = list(Path(root).glob(f"hpx{nside}=*/part-{tag}-*.parquet"))
+    """Delete every file written for ``tag`` (to redo one input). Returns the count.
+
+    Only files of exactly this tag are removed: tag ``"a"`` does not touch
+    the files of tag ``"a-b"``.
+    """
+    stale = [
+        f
+        for side, pix, d in _partition_dirs(Path(root))
+        if side == nside
+        for f in [d / f"part-{tag}-{pix}.parquet"]
+        if f.is_file()
+    ]
     for s in stale:
         s.unlink()
     return len(stale)
