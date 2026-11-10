@@ -120,3 +120,8 @@ def test_remove_partitions_matches_tag_exactly(tmp_path, cat):
     assert remove_partitions(tmp_path, 8, "a") == n_ab
     left = _files(tmp_path)
     assert len(left) == n_ab and all("part-a-b-" in f for f in left)
+
+
+def test_tag_must_be_a_file_name_fragment(tmp_path, cat):
+    with pytest.raises(ValueError, match="tag"):
+        write_partitions(cat, tmp_path, nside=8, tag="a/b")

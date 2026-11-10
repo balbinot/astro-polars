@@ -84,10 +84,12 @@ def correct_radial_velocity_error(
 
     The factor is ``0.318 + 0.3884 g - 0.02778 g^2`` for ``8 <= grvs_mag < 12``
     and ``16.554 - 2.4899 g + 0.09933 g^2`` for ``grvs_mag >= 12``; brighter
-    than 8 mag the value at 8 mag is used, as the paper recommends.
+    than 8 mag the value at 8 mag is used, as the paper recommends. Null
+    where ``grvs_mag`` is null.
     """
     err, g = to_expr(radial_velocity_error), to_expr(grvs_mag)
-    gb = pl.max_horizontal(g, pl.lit(8.0))
+    # not max_horizontal: it ignores nulls, which would treat a missing magnitude as 8 mag
+    gb = pl.when(g < 8).then(8.0).otherwise(g)
     factor = (
         pl.when(gb < 12)
         .then(0.318 + 0.3884 * gb - 0.02778 * gb**2)

@@ -90,3 +90,8 @@ def test_phot_namespace_strict():
     df = pl.DataFrame({"fg": [10.0]})
     with pytest.raises(pl.exceptions.ColumnNotFoundError, match="fi"):
         df.phot.add_mags({"i": "fi"}, strict=True)
+
+
+def test_unknown_unit_message():
+    with pytest.raises(ValueError, match="unknown flux unit"):
+        ap.ab_zeropoint("furlong")

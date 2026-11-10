@@ -137,3 +137,9 @@ def test_process_pipeline(rng):
     np.testing.assert_allclose(out["vZ"], ref["vZ"], rtol=1e-12)
     # galactic PMs agree with df.sky.to_galactic
     np.testing.assert_allclose(out["pmb"], df.sky.to_galactic()["pmb"], rtol=1e-12)
+
+
+def test_rv_error_is_null_without_grvs():
+    df = pl.DataFrame({"radial_velocity_error": [1.0, 1.0], "grvs_mag": [None, 7.0]})
+    out = df.select(gaia.correct_radial_velocity_error()).to_series()
+    assert out[0] is None and out[1] == pytest.approx(0.318 + 0.3884 * 8 - 0.02778 * 64)

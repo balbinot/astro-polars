@@ -40,6 +40,15 @@ def to_expr(value: IntoExpr) -> pl.Expr:
     return pl.lit(value)
 
 
+def wrap360(angle_deg: pl.Expr) -> pl.Expr:
+    """Wrap an angle in degrees to [0, 360).
+
+    A single ``% 360`` returns exactly 360.0 for tiny negative inputs
+    (``-1e-15 % 360``), hence the second one.
+    """
+    return (angle_deg % 360.0) % 360.0
+
+
 def collect(lf: pl.LazyFrame) -> pl.DataFrame:
     """Collect with the streaming engine (works across Polars versions)."""
     try:
