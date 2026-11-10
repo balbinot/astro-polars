@@ -37,3 +37,11 @@ def test_columns_and_missing(table):
     assert df.columns == ["RA", "ID"]
     df = read_fits_table(table, columns=["NOPE"], warn_missing=False)
     assert df.shape == (0, 0)
+
+
+def test_integer_tnull_becomes_null(tmp_path):
+    fits = astropy_fits()
+    path = tmp_path / "n.fits"
+    col = fits.Column(name="N", format="J", null=-99, array=np.array([1, -99, 3], dtype=">i4"))
+    fits.BinTableHDU.from_columns([col]).writeto(path)
+    assert read_fits_table(path)["N"].to_list() == [1, None, 3]

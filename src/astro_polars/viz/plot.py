@@ -91,6 +91,11 @@ def _projection_class(projection):
     return projection
 
 
+def _need_positive(good: np.ndarray) -> None:
+    if not good.any():
+        raise ValueError("log=True needs at least one pixel with a positive, finite value")
+
+
 def skymap(
     data,
     nside: int | None = None,
@@ -151,9 +156,11 @@ def skymap(
         if nside is None:
             raise ValueError("nside is required for (pixels, values) input")
         pixels, values = data
+        values = np.asarray(values, dtype=np.float64)
         good = np.isfinite(values)
         if log:
             good &= values > 0
+            _need_positive(good)
         sp.draw_hpxpix(
             nside,
             np.asarray(pixels)[good],
@@ -167,6 +174,7 @@ def skymap(
         m = np.asarray(data, dtype=np.float64)
         if log:
             m = np.where(m > 0, m, np.nan)
+            _need_positive(np.isfinite(m))
         sp.draw_hpxmap(m, nest=nest, zoom=zoom, norm=norm, **kwargs)
 
     if colorbar:

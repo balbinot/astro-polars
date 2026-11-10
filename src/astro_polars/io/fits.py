@@ -39,6 +39,9 @@ def read_fits_table(
         with a warning if ``warn_missing``. ``None`` reads all columns.
     hdu
         HDU index or name holding the table.
+
+    Integer columns with a ``TNULL`` value get nulls where they hold it.
+    Multidimensional columns become list or array columns.
     """
     fits = require("astropy.io.fits", "fits")
     with fits.open(path, memmap=True) as hdul:
@@ -60,6 +63,11 @@ def read_fits_table(
             a = _native(data[c])
             if a.ndim > 1:
                 series.append(pl.Series(c, list(a)))
-            else:
-                series.append(pl.Series(c, a))
+                continue
+            s = pl.Series(c, a)
+            # integer columns mark missing values with TNULL; floats use NaN
+            tnull = data.columns[c].null
+            if tnull is not None and a.dtype.kind in "iu":
+                s = s.set(s == tnull, None)
+            series.append(s)
     return pl.DataFrame(series)

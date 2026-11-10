@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Sequence
 import numpy as np
 import polars as pl
 
-from ._utils import to_expr
+from ._utils import to_expr, wrap360
 
 if TYPE_CHECKING:
     from polars._typing import IntoExpr
@@ -110,7 +110,7 @@ def _rotate_vec(m, x, y, z):
 
 def _lonlat_from_xyz(x, y, z, wrap180: bool):
     lon = pl.arctan2(y, x).degrees()
-    lon = lon if wrap180 else lon % 360.0
+    lon = lon if wrap180 else wrap360(lon)
     lat = pl.arctan2(z, (x * x + y * y).sqrt()).degrees()
     return lon, lat
 

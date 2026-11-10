@@ -59,7 +59,12 @@ def ab_zeropoint(unit: str | float) -> float:
     ``unit`` is a name (``"Jy"``, ``"mJy"``, ``"uJy"``, ``"nJy"``,
     ``"nanomaggy"``) or the size of the unit in Jy.
     """
-    jy = _UNITS_JY[unit] if isinstance(unit, str) else float(unit)
+    if isinstance(unit, str):
+        if unit not in _UNITS_JY:
+            raise ValueError(f"unknown flux unit {unit!r}; use one of {', '.join(_UNITS_JY)}")
+        jy = _UNITS_JY[unit]
+    else:
+        jy = float(unit)
     return -2.5 * math.log10(jy / AB_FLUX_JY)
 
 

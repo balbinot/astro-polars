@@ -135,6 +135,10 @@ def write_partitions(
     file with that name is replaced. Returns the number of files written.
     """
     nside_to_order(nside)
+    if not tag or "/" in tag or "\\" in tag:
+        raise ValueError(
+            f"tag must be a non-empty file-name fragment without path separators, got {tag!r}"
+        )
     key = f"hpx{nside}"
     df = df.lazy().collect() if isinstance(df, pl.LazyFrame) else df
     if key not in df.columns:

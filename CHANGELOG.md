@@ -12,6 +12,16 @@ Fixes from an audit against astropy, healpy, matplotlib and the papers:
 - `dynamics`: distances from parallax (`calc("distance")`, `from_observed(parallax=...)`) are null for non-positive parallaxes, as in `surveys.gaia.distance_from_parallax`.
 - `viz.plot_heatmap(log=True)` accepts `vmin`/`vmax`; `viz.skymap(log=True)` no longer fails when `norm` is also passed.
 
+Second audit pass (edge cases, docs examples, oldest supported dependencies):
+
+- `surveys.gaia.correct_radial_velocity_error` treated a missing `grvs_mag` as 8 mag; the result is now null there.
+- `df.galactic.calc(columns=...)` also maps Galactocentric columns (`{"X": "x_gc"}`); before, only the observables were honoured and mapping `X` ... `vZ` failed.
+- `crossmatch` failed when `df1` already had a `separation` or `multiplicity` column; that column is now returned as `separation_1` / `multiplicity_1`.
+- Longitudes in [0, 360) could come out as exactly 360.0 (group centroids, `rotate`, `from_galactocentric`) for values a rounding error below 0.
+- `io.fits.read_fits_table`: integer columns with a `TNULL` marker get nulls instead of the marker value.
+- Clearer errors: unknown flux unit in `ab_zeropoint`, `tag` with a path separator in `write_partitions`, `skymap(log=True)` with no positive pixel.
+- `surveys.euclid.convert_tiles` warns when a tile directory holds more than one catalogue file (their outputs share a tag and replace each other).
+
 - `remove_duplicates` now groups close sources friends-of-friends. The previous nearest-neighbour version could keep close pairs inside triples and quadruples (A=0", C=0.45", B=0.9" kept A and B at 1"). New `priority`/`descending` pick the surviving row, `agg` returns group statistics (`"mean"`, `"median"`, ..., a `{column: statistic}` dict or Polars expressions) with the spherical centroid as position, and `size` adds the group size. New `find_duplicates` labels the groups. Both are on `df.sky`.
 - `galactic`: `SolarParameters` (R0, z0, U, V, W, vcirc; settable default), `galactocentric` and `from_galactocentric` (astropy-compatible frame, including the z0 tilt), `heliocentric_cartesian`, `reflex_correct` (proper motions in the Galactic standard of rest, ICRS or Galactic input), `vgsr`.
 - `dynamics`: `df.galactic` namespace with `from_observed`, `to_observed`, `reflex_correct`, `vgsr` and `calc`, which resolves dependencies between ~60 quantities (cylindrical and spherical kinematics, angular momenta, energies, actions, angles, frequencies, pericentre, apocentre, eccentricity, circular-orbit radius, period and angular momentum, circularity, action-diamond coordinates) starting from observables or Galactocentric phase space. Potential-based quantities use AGAMA (`dynamics` extra) through `GalaxyModel`, with cached action finders; `available()` lists every quantity, and the names of polars_astro are accepted as aliases.

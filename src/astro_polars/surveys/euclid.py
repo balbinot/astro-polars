@@ -447,6 +447,16 @@ def convert_tiles(
     files = find_tiles(indir, pattern)
     if not files:
         raise FileNotFoundError(f"No files matching {pattern} under {indir}")
+    tiles = [os.path.basename(os.path.dirname(f)) for f in files]
+    shared = sorted({t for t in tiles if tiles.count(t) > 1})
+    if shared:
+        # outputs are tagged by tile directory, so such files replace each other
+        msg = (
+            f"{len(shared)} tile directories hold more than one catalogue file "
+            f"(e.g. {shared[0]}); only the last file of each is kept in the output"
+        )
+        log.warning(msg)
+        say(f"[warn] {msg}")
     todo = [f for f in files if force or not manifest.is_done(f)]
     say(f"{len(files)} FITS files found, {len(todo)} to process (nside={nside}, nested)")
 

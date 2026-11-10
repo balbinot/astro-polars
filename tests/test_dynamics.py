@@ -237,3 +237,13 @@ def test_non_positive_parallax_gives_null_distance():
     assert df.galactic.calc("distance")["distance"].to_list() == [0.5, None, None]
     out = df.galactic.from_observed(parallax="parallax", pmra=None)
     assert out["X"].null_count() == 2
+
+
+def test_columns_maps_phase_space_too():
+    df = pl.DataFrame(
+        {"x_gc": [3.0], "Y": [4.0], "Z": [0.0], "vx": [1.0], "vY": [2.0], "vZ": [0.0]}
+    )
+    out = df.galactic.calc(["R", "Lz", "Ekin"], columns={"X": "x_gc", "vX": "vx"})
+    assert out["R"].item() == pytest.approx(5.0)
+    assert out["Lz"].item() == pytest.approx(4.0 * 1.0 - 3.0 * 2.0)
+    assert out["Ekin"].item() == pytest.approx(2.5)

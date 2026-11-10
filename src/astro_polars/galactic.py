@@ -30,7 +30,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import polars as pl
 
-from ._utils import to_expr
+from ._utils import to_expr, wrap360
 from .coords import GALACTIC_TO_ICRS, ICRS_TO_GALACTIC
 
 if TYPE_CHECKING:
@@ -240,7 +240,7 @@ def from_galactocentric(
     sun = sol._sun_position()
     p = _matvec(minv, *(to_expr(c) - float(sun[i]) for i, c in enumerate((X, Y, Z))))
     d = (p[0] ** 2 + p[1] ** 2 + p[2] ** 2).sqrt()
-    ra = pl.arctan2(p[1], p[0]).degrees() % 360.0
+    ra = wrap360(pl.arctan2(p[1], p[0]).degrees())
     dec = pl.arctan2(p[2], (p[0] ** 2 + p[1] ** 2).sqrt()).degrees()
     fields = [ra.alias("ra"), dec.alias("dec"), d.alias("distance")]
     if vX is not None and vY is not None and vZ is not None:

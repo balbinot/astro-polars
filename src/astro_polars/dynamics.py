@@ -382,81 +382,86 @@ for _c in ("vX", "vY", "vZ"):
         _c, ("_gcvel",), _field_of("_gcvel", _c), f"Galactocentric {_c} (km/s)."
     )
 
-_X, _Y, _Z, _vX, _vY, _vZ = (pl.col(c) for c in PHASE_SPACE)
-
 
 # -- spherical and cylindrical -------------------------------------------------------
 @_quantity("r", ["X", "Y", "Z"])
 def _r(ctx):
     """Galactocentric spherical radius (kpc)."""
-    return (_X**2 + _Y**2 + _Z**2).sqrt()
+    return (ctx.col("X") ** 2 + ctx.col("Y") ** 2 + ctx.col("Z") ** 2).sqrt()
 
 
 @_quantity("R", ["X", "Y"])
 def _R(ctx):
     """Galactocentric cylindrical radius (kpc)."""
-    return (_X**2 + _Y**2).sqrt()
+    return (ctx.col("X") ** 2 + ctx.col("Y") ** 2).sqrt()
 
 
 @_quantity("phi", ["X", "Y"])
 def _phi(ctx):
     """Galactocentric azimuth atan2(Y, X) in degrees (the Sun is at 180)."""
-    return pl.arctan2(_Y, _X).degrees()
+    return pl.arctan2(ctx.col("Y"), ctx.col("X")).degrees()
 
 
 @_quantity("vr", ["X", "Y", "Z", "vX", "vY", "vZ", "r"])
 def _vr(ctx):
     """Galactocentric spherical radial velocity (km/s)."""
-    return (_X * _vX + _Y * _vY + _Z * _vZ) / _f("r")
+    return (
+        ctx.col("X") * ctx.col("vX") + ctx.col("Y") * ctx.col("vY") + ctx.col("Z") * ctx.col("vZ")
+    ) / ctx.col("r")
 
 
 @_quantity("vR", ["X", "Y", "vX", "vY", "R"])
 def _vR(ctx):
     """Galactocentric cylindrical radial velocity (km/s)."""
-    return (_X * _vX + _Y * _vY) / _f("R")
+    return (ctx.col("X") * ctx.col("vX") + ctx.col("Y") * ctx.col("vY")) / ctx.col("R")
 
 
 @_quantity("vphi", ["X", "Y", "vX", "vY", "R"])
 def _vphi(ctx):
     """Azimuthal velocity, positive in the direction of Galactic rotation (km/s)."""
-    return (_Y * _vX - _X * _vY) / _f("R")
+    return (ctx.col("Y") * ctx.col("vX") - ctx.col("X") * ctx.col("vY")) / ctx.col("R")
 
 
 @_quantity("vtheta", ["Z", "vX", "vY", "vZ", "X", "Y", "r", "R"])
 def _vtheta(ctx):
     """Polar velocity, positive towards the South Galactic Pole (km/s)."""
-    return (_Z * (_X * _vX + _Y * _vY) / _f("R") - _f("R") * _vZ) / _f("r")
+    return (
+        ctx.col("Z") * (ctx.col("X") * ctx.col("vX") + ctx.col("Y") * ctx.col("vY")) / ctx.col("R")
+        - ctx.col("R") * ctx.col("vZ")
+    ) / ctx.col("r")
 
 
 @_quantity("vt", ["vtheta", "vphi"])
 def _vt(ctx):
     """Galactocentric tangential speed sqrt(vtheta^2 + vphi^2) (km/s)."""
-    return (_f("vtheta") ** 2 + _f("vphi") ** 2).sqrt()
+    return (ctx.col("vtheta") ** 2 + ctx.col("vphi") ** 2).sqrt()
 
 
 @_quantity("v_toomre", ["vphi", "vR", "vZ"])
 def _v_toomre(ctx):
     """Speed relative to the local standard of rest, sqrt((vphi - vcirc)^2 + vR^2 + vZ^2) (km/s)."""
-    return ((_f("vphi") - ctx.solar.vcirc) ** 2 + _f("vR") ** 2 + _vZ**2).sqrt()
+    return (
+        (ctx.col("vphi") - ctx.solar.vcirc) ** 2 + ctx.col("vR") ** 2 + ctx.col("vZ") ** 2
+    ).sqrt()
 
 
 # -- on the sky ----------------------------------------------------------------------
 @_quantity("v_l", ["distance", "pml"])
 def _v_l(ctx):
     """Heliocentric tangential velocity along l (km/s)."""
-    return galactic.K_PM * ctx.col("distance") * _f("pml")
+    return galactic.K_PM * ctx.col("distance") * ctx.col("pml")
 
 
 @_quantity("v_b", ["distance", "pmb"])
 def _v_b(ctx):
     """Heliocentric tangential velocity along b (km/s)."""
-    return galactic.K_PM * ctx.col("distance") * _f("pmb")
+    return galactic.K_PM * ctx.col("distance") * ctx.col("pmb")
 
 
 @_quantity("vtan", ["v_l", "v_b"])
 def _vtan(ctx):
     """Heliocentric tangential speed (km/s)."""
-    return (_f("v_l") ** 2 + _f("v_b") ** 2).sqrt()
+    return (ctx.col("v_l") ** 2 + ctx.col("v_b") ** 2).sqrt()
 
 
 @_quantity("distance_modulus", ["distance"])
@@ -469,37 +474,37 @@ def _dm(ctx):
 @_quantity("Lx", ["Y", "Z", "vY", "vZ"])
 def _Lx(ctx):
     """Angular momentum x component, L = -(r x v) (kpc km/s)."""
-    return _Z * _vY - _Y * _vZ
+    return ctx.col("Z") * ctx.col("vY") - ctx.col("Y") * ctx.col("vZ")
 
 
 @_quantity("Ly", ["X", "Z", "vX", "vZ"])
 def _Ly(ctx):
     """Angular momentum y component (kpc km/s)."""
-    return _X * _vZ - _Z * _vX
+    return ctx.col("X") * ctx.col("vZ") - ctx.col("Z") * ctx.col("vX")
 
 
 @_quantity("Lz", ["X", "Y", "vX", "vY"])
 def _Lz(ctx):
     """Angular momentum z component, R * vphi, positive for prograde orbits (kpc km/s)."""
-    return _Y * _vX - _X * _vY
+    return ctx.col("Y") * ctx.col("vX") - ctx.col("X") * ctx.col("vY")
 
 
 @_quantity("L", ["Lx", "Ly", "Lz"])
 def _L(ctx):
     """Total angular momentum (kpc km/s)."""
-    return (_f("Lx") ** 2 + _f("Ly") ** 2 + _f("Lz") ** 2).sqrt()
+    return (ctx.col("Lx") ** 2 + ctx.col("Ly") ** 2 + ctx.col("Lz") ** 2).sqrt()
 
 
 @_quantity("Lp", ["Lx", "Ly"])
 def _Lp(ctx):
     """Angular momentum perpendicular to Z, sqrt(Lx^2 + Ly^2) (kpc km/s)."""
-    return (_f("Lx") ** 2 + _f("Ly") ** 2).sqrt()
+    return (ctx.col("Lx") ** 2 + ctx.col("Ly") ** 2).sqrt()
 
 
 @_quantity("Ekin", ["vX", "vY", "vZ"])
 def _Ekin(ctx):
     """Kinetic energy per unit mass (km/s)^2."""
-    return 0.5 * (_vX**2 + _vY**2 + _vZ**2)
+    return 0.5 * (ctx.col("vX") ** 2 + ctx.col("vY") ** 2 + ctx.col("vZ") ** 2)
 
 
 @_quantity("Epot", ["X", "Y", "Z"], potential=True)
@@ -512,7 +517,7 @@ def _Epot(ctx):
 @_quantity("E", ["Epot", "Ekin"])
 def _E(ctx):
     """Total energy per unit mass (km/s)^2."""
-    return _f("Epot") + _f("Ekin")
+    return ctx.col("Epot") + ctx.col("Ekin")
 
 
 # -- orbit extent and circular orbits ---------------------------------------------------
@@ -527,19 +532,19 @@ def _periapo(ctx):
 @_quantity("peri", ["_periapo"])
 def _peri(ctx):
     """Pericentre radius from (E, L) (kpc); exact for spherical potentials."""
-    return _f("_periapo").struct.field("peri")
+    return ctx.col("_periapo").struct.field("peri")
 
 
 @_quantity("apo", ["_periapo"])
 def _apo(ctx):
     """Apocentre radius from (E, L) (kpc); exact for spherical potentials."""
-    return _f("_periapo").struct.field("apo")
+    return ctx.col("_periapo").struct.field("apo")
 
 
 @_quantity("ecc", ["peri", "apo"])
 def _ecc(ctx):
     """Eccentricity (apo - peri) / (apo + peri)."""
-    return (_f("apo") - _f("peri")) / (_f("apo") + _f("peri"))
+    return (ctx.col("apo") - ctx.col("peri")) / (ctx.col("apo") + ctx.col("peri"))
 
 
 @_quantity("RcircE", ["E"], potential=True)
@@ -573,7 +578,7 @@ def _Lcirc(ctx):
 @_quantity("circ", ["Lz", "Lcirc"])
 def _circ(ctx):
     """Circularity Lz / Lcirc(E): +1 prograde circular, -1 retrograde circular."""
-    return _f("Lz") / _f("Lcirc")
+    return ctx.col("Lz") / ctx.col("Lcirc")
 
 
 # -- actions, angles, frequencies -------------------------------------------------------
@@ -609,19 +614,19 @@ for _c in _ACTIONS + _ANGLES + _FREQS:
 @_quantity("Jtot", ["JR", "Jz", "Jphi"])
 def _Jtot(ctx):
     """JR + Jz + |Jphi| (kpc km/s)."""
-    return _f("JR") + _f("Jz") + _f("Jphi").abs()
+    return ctx.col("JR") + ctx.col("Jz") + ctx.col("Jphi").abs()
 
 
 @_quantity("Jdiamond", ["JR", "Jz", "Jtot"])
 def _Jdiamond(ctx):
     """(Jz - JR) / Jtot: vertical axis of the action diamond."""
-    return (_f("Jz") - _f("JR")) / _f("Jtot")
+    return (ctx.col("Jz") - ctx.col("JR")) / ctx.col("Jtot")
 
 
 @_quantity("Jphi_Jtot", ["Jphi", "Jtot"])
 def _Jphi_Jtot(ctx):
     """Jphi / Jtot: horizontal axis of the action diamond."""
-    return _f("Jphi") / _f("Jtot")
+    return ctx.col("Jphi") / ctx.col("Jtot")
 
 
 def _signed_sqrt(e: pl.Expr) -> pl.Expr:
@@ -631,25 +636,25 @@ def _signed_sqrt(e: pl.Expr) -> pl.Expr:
 @_quantity("sqrt_JR", ["JR"])
 def _sqrt_JR(ctx):
     """sqrt(JR)."""
-    return _f("JR").sqrt()
+    return ctx.col("JR").sqrt()
 
 
 @_quantity("sqrt_Jz", ["Jz"])
 def _sqrt_Jz(ctx):
     """sqrt(Jz)."""
-    return _f("Jz").sqrt()
+    return ctx.col("Jz").sqrt()
 
 
 @_quantity("sqrt_Jphi", ["Jphi"])
 def _sqrt_Jphi(ctx):
     """sign(Jphi) sqrt(|Jphi|)."""
-    return _signed_sqrt(_f("Jphi"))
+    return _signed_sqrt(ctx.col("Jphi"))
 
 
 @_quantity("sqrt_Lz", ["Lz"])
 def _sqrt_Lz(ctx):
     """sign(Lz) sqrt(|Lz|)."""
-    return _signed_sqrt(_f("Lz"))
+    return _signed_sqrt(ctx.col("Lz"))
 
 
 del _c
@@ -784,9 +789,11 @@ class Galactic:
         solar
             `astro_polars.galactic.SolarParameters`; default the package default.
         columns
-            Map from input names (``ra``, ``dec``, ``distance``, ``parallax``,
-            ``pmra``, ``pmdec``, ``radial_velocity``) to your column names, e.g.
-            ``{"radial_velocity": "rv_corrected"}``.
+            Map from the names used here to your column names, e.g.
+            ``{"radial_velocity": "rv_corrected"}`` or ``{"X": "x_gc"}``. Any
+            input (``ra``, ``dec``, ``distance``, ``parallax``, ``pmra``,
+            ``pmdec``, ``radial_velocity``, ``X`` ... ``vZ``) or quantity
+            that you already have under another name can be mapped.
         interp
             Use AGAMA's interpolated action finder.
         overwrite

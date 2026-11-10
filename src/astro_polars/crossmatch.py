@@ -18,6 +18,8 @@ from typing import Sequence
 import numpy as np
 import polars as pl
 
+from ._utils import wrap360
+
 __all__ = ["crossmatch", "crossmatch_polars", "find_duplicates", "remove_duplicates"]
 
 log = logging.getLogger(__name__)
@@ -126,7 +128,8 @@ def crossmatch(
     suffix1, suffix2
         Suffixes appended to the kept columns of each catalogue. A ``df2``
         column whose name would still clash with a ``df1`` column gets an
-        extra ``_2``.
+        extra ``_2``. A ``df1`` column called ``separation`` or
+        ``multiplicity`` becomes ``separation_1`` / ``multiplicity_1``.
     n_jobs
         Threads used for the tree query; ``-1`` uses all CPUs.
     how
@@ -203,8 +206,11 @@ def crossmatch(
         .with_columns(pl.len().over("_idx2").cast(pl.UInt32).alias("multiplicity"))
     )
 
+    # a kept column that would clash with the two added columns gets "_1"
+    added = {"separation", "multiplicity"}
     names1 = [f"{c}{sfx1}" for c in keep1]
-    taken = set(names1) | {"separation", "multiplicity"}
+    names1 = [f"{n}_1" if n in added else n for n in names1]
+    taken = set(names1) | added
     names2 = []
     for c in keep2:
         name = f"{c}{sfx2}"
@@ -334,7 +340,7 @@ def _centroid(x: str, y: str) -> list[pl.Expr]:
     cy = (lat.cos() * lon.sin()).mean()
     cz = lat.sin().mean()
     return [
-        (pl.arctan2(cy, cx).degrees() % 360.0).alias(x),
+        wrap360(pl.arctan2(cy, cx).degrees()).alias(x),
         pl.arctan2(cz, (cx * cx + cy * cy).sqrt()).degrees().alias(y),
     ]
 

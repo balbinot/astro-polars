@@ -230,3 +230,18 @@ def test_remove_duplicates_agg_one_coordinate():
     out = remove_duplicates(df, agg={"ra": "min", "g": "mean"})
     assert out.columns == ["ra", "dec", "g"]
     assert out["ra"][0] == 10.0 and out["dec"][0] == pytest.approx(0.0) and out["g"][0] == 2.0
+
+
+def test_existing_separation_column_is_renamed(cats):
+    cat1, cat2 = cats
+    out = crossmatch(
+        cat1.with_columns(separation=pl.lit(7.0)), cat2, x2="RA", y2="DEC", how="inner"
+    ).collect()
+    assert "separation_1" in out.columns and (out["separation_1"] == 7.0).all()
+    assert (out["separation"] < 0.5).all()
+
+
+def test_centroid_longitude_stays_below_360():
+    df = pl.DataFrame({"ra": [359.99999, 0.00001], "dec": [0.0, 0.0]})
+    ra = remove_duplicates(df, agg="mean")["ra"].item()
+    assert 0.0 <= ra < 360.0
