@@ -42,7 +42,7 @@ from .coords import (
     rotate_pm,
     rotate_pm_errors,
 )
-from .crossmatch import crossmatch, crossmatch_polars, remove_duplicates
+from .crossmatch import crossmatch, crossmatch_polars, find_duplicates, remove_duplicates
 from .dynamics import Galactic
 from .galactic import SolarParameters, galactocentric, reflex_correct
 from .healpix import cone_pixels, degrade, gaia_source_id_to_healpix, healpix_index
@@ -93,6 +93,7 @@ __all__ = [
     # crossmatch
     "crossmatch",
     "crossmatch_polars",
+    "find_duplicates",
     "remove_duplicates",
     # healpix
     "healpix_index",

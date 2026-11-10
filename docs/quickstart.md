@@ -68,6 +68,21 @@ pairs = ap.crossmatch(cat1, cat2, radius_arcsec=1.0, how="inner")   # LazyFrame
 clean = ap.remove_duplicates(cat, radius_arcsec=1.0)                # DataFrame
 ```
 
+Duplicates are grouped friends-of-friends, so pairs, triples and chains of
+close sources (A~B, B~C) each become one row. Choose which row survives, or
+return statistics of each group instead:
+
+```python
+groups = ap.find_duplicates(cat, radius_arcsec=1.0)        # adds dup_group, dup_n
+best = ap.remove_duplicates(cat, priority="g_err")         # keep the most precise
+merged = ap.remove_duplicates(cat, agg="median", size="n_obs")
+merged = ap.remove_duplicates(
+    cat, agg=[pl.col("g").mean(), pl.col("g").std().alias("g_std")]
+)
+```
+
+With `agg`, `ra` and `dec` become the group centroid on the sphere.
+
 ## Photometry
 
 ```python
