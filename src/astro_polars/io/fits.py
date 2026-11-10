@@ -40,6 +40,8 @@ def read_fits_table(
     hdu
         HDU index or name holding the table.
 
+    Notes
+    -----
     Integer columns with a ``TNULL`` value get nulls where they hold it.
     Multidimensional columns become list or array columns.
     """
