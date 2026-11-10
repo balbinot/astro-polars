@@ -310,8 +310,9 @@ def _f(name: str) -> pl.Expr:
 # -- observables -> Galactocentric ----------------------------------------------
 @_quantity("distance", ["parallax"])
 def _distance(ctx):
-    """Heliocentric distance (kpc) as 1/parallax (parallax in mas)."""
-    return 1.0 / ctx.col("parallax")
+    """Heliocentric distance (kpc) as 1/parallax (parallax in mas); null if parallax <= 0."""
+    p = ctx.col("parallax")
+    return pl.when(p > 0).then(1.0 / p)
 
 
 @_quantity("_lb", ["ra", "dec", "pmra", "pmdec"])
@@ -832,10 +833,15 @@ class Galactic:
     ):
         """Add Galactocentric ``X, Y, Z`` (kpc) and ``vX, vY, vZ`` (km/s).
 
-        Give ``parallax`` (mas) instead of ``distance`` to use 1/parallax.
+        Give ``parallax`` (mas) instead of ``distance`` to use 1/parallax
+        (null for non-positive parallaxes).
         Velocities are skipped when ``pmra``, ``pmdec`` or ``radial_velocity`` is None.
         """
-        d = 1.0 / pl.col(parallax) if parallax is not None else distance
+        if parallax is not None:
+            p = pl.col(parallax)
+            d = pl.when(p > 0).then(1.0 / p)
+        else:
+            d = distance
         s = galactic.galactocentric(ra, dec, d, pmra, pmdec, radial_velocity, solar)
         nfields = 6 if None not in (pmra, pmdec, radial_velocity) else 3
         return _unpack(self._df, s, PHASE_SPACE[:nfields], out[:nfields])

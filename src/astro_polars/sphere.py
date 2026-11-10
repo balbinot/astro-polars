@@ -25,7 +25,7 @@ def angular_separation(lon1, lat1, lon2, lat2):
 
     Works on scalars and NumPy arrays (broadcasting as NumPy does). The
     Vincenty formula is stable at all distances, including the poles and
-    antipodes [1]_.
+    antipodes ([great-circle distance](https://en.wikipedia.org/wiki/Great-circle_distance)).
 
     Parameters
     ----------
@@ -36,10 +36,6 @@ def angular_separation(lon1, lat1, lon2, lat2):
     -------
     float or numpy.ndarray
         Separation in degrees.
-
-    References
-    ----------
-    .. [1] https://en.wikipedia.org/wiki/Great-circle_distance
     """
     d2r = np.deg2rad(1)
     r2d = np.rad2deg(1)

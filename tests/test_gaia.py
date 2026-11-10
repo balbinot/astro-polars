@@ -41,7 +41,12 @@ def test_estimate_grvs_range():
     )
     out = df.select(gaia.estimate_grvs()).to_series()
     assert np.isfinite(out[0]) and np.isfinite(out[1]) and np.isnan(out[2])
-    assert out[0] == pytest.approx(12.0 - 0.26, abs=0.05)
+    # Gaia Collaboration 2018 (A&A 616, A1) Eq. 2 gives G_RVS - G_RP, not G_RVS - G
+    x = 0.7
+    poly = 0.042319 - 0.65124 * x + 1.0215 * x**2 - 1.3947 * x**3 + 0.53768 * x**4
+    assert out[0] == pytest.approx(11.3 + poly)
+    # a red star (G - G_RP = 1.5) is brighter in RVS than in RP
+    assert out[1] < 10.5
 
 
 def test_deredden_zero_and_consistency():

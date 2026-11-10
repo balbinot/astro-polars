@@ -102,12 +102,12 @@ def estimate_grvs(
 ) -> pl.Expr:
     """G_RVS estimated from G and G_RP, for stars without ``grvs_mag``.
 
-    Quartic polynomials in ``G - G_RP`` for ``0.1 < G - G_RP < 1.4`` and
-    ``1.4 <= G - G_RP < 1.7`` (Gaia Collaboration 2018, A&A 616, A1,
-    Sect. 3.3); NaN outside that colour range.
+    ``G_RVS - G_RP`` is a quartic polynomial in ``G - G_RP`` for
+    ``0.1 < G - G_RP < 1.4`` and ``1.4 <= G - G_RP < 1.7`` (Gaia Collaboration
+    2018, A&A 616, A1, Eqs. 2 and 3); NaN outside that colour range.
     """
-    g = to_expr(phot_g_mean_mag)
-    x = g - to_expr(phot_rp_mean_mag)
+    rp = to_expr(phot_rp_mean_mag)
+    x = to_expr(phot_g_mean_mag) - rp
 
     def quartic(c):
         return c[0] + x * (c[1] + x * (c[2] + x * (c[3] + x * c[4])))
@@ -116,9 +116,9 @@ def estimate_grvs(
     high = (132.32, -377.28, 402.32, -190.97, 34.026)
     return (
         pl.when((x > 0.1) & (x < 1.4))
-        .then(g + quartic(low))
+        .then(rp + quartic(low))
         .when((x >= 1.4) & (x < 1.7))
-        .then(g + quartic(high))
+        .then(rp + quartic(high))
         .otherwise(float("nan"))
     )
 

@@ -230,3 +230,10 @@ def test_agama_milky_way():
     assert row["JR"] < 20 and row["Jz"] < 1
     assert row["circ"] == pytest.approx(1.0, abs=0.02)
     assert row["peri"] <= sol.R0 * 1.001 <= row["apo"] * 1.002
+
+
+def test_non_positive_parallax_gives_null_distance():
+    df = pl.DataFrame({"ra": [10.0] * 3, "dec": [5.0] * 3, "parallax": [2.0, 0.0, -1.0]})
+    assert df.galactic.calc("distance")["distance"].to_list() == [0.5, None, None]
+    out = df.galactic.from_observed(parallax="parallax", pmra=None)
+    assert out["X"].null_count() == 2

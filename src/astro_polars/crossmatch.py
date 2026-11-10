@@ -39,6 +39,11 @@ def _unit_vectors(lonlat_deg: np.ndarray) -> np.ndarray:
     return np.column_stack([clat * np.cos(lon), clat * np.sin(lon), np.sin(lat)])
 
 
+def _finite_rows(lonlat_deg: np.ndarray) -> np.ndarray:
+    """Indices of rows whose two coordinates are finite (nulls arrive as NaN)."""
+    return np.flatnonzero(np.isfinite(lonlat_deg).all(axis=1)).astype(np.int64)
+
+
 def _match_kdtree(c1: np.ndarray, c2: np.ndarray, k: int, radius_arcsec: float, n_jobs: int):
     """Nearest neighbours by chord length; returns (separation_arcsec, idx), shape (n2, k)."""
     from scipy.spatial import cKDTree
@@ -143,7 +148,9 @@ def crossmatch(
     Notes
     -----
     Coordinates are collected into memory to build the tree; the other
-    columns stay lazy and are joined back at the end.
+    columns stay lazy and are joined back at the end. Rows with a null, NaN
+    or infinite coordinate are never matched (with ``how="left"`` they are
+    returned with null ``df2`` columns).
     """
     if how not in ("left", "inner"):
         raise ValueError("how must be 'left' or 'inner'")
@@ -163,20 +170,32 @@ def crossmatch(
     coords1 = df1.select(x1, y1).collect().to_numpy().astype(np.float64)
     coords2 = df2.select(x2, y2).collect().to_numpy().astype(np.float64)
 
-    _say(verbose, f"Matching {len(coords2)} sources against {len(coords1)} ({method}, k={k})...")
-    if method == "kdtree":
-        sep_arcsec, idx = _match_kdtree(coords1, coords2, k, radius_arcsec, n_jobs)
+    # rows with a null, NaN or infinite coordinate never match
+    rows1, rows2 = _finite_rows(coords1), _finite_rows(coords2)
+    _say(verbose, f"Matching {len(rows2)} sources against {len(rows1)} ({method}, k={k})...")
+    if len(rows1) and len(rows2):
+        if method == "kdtree":
+            sep_arcsec, idx = _match_kdtree(
+                coords1[rows1], coords2[rows2], k, radius_arcsec, n_jobs
+            )
+        else:
+            k_eff = min(k, len(rows1))  # BallTree refuses k > number of points
+            sep_arcsec, idx = _match_balltree(coords1[rows1], coords2[rows2], k_eff, n_jobs)
+        found = idx < len(rows1)  # cKDTree marks missing neighbours with idx = n
+        idx1 = np.where(found, rows1[np.minimum(idx, len(rows1) - 1)], -1)
+        idx2 = np.broadcast_to(rows2[:, None], idx.shape)
+        sep_arcsec = np.where(found, sep_arcsec, np.inf)
     else:
-        sep_arcsec, idx = _match_balltree(coords1, coords2, k, n_jobs)
+        idx1 = idx2 = np.empty(0, np.int64)
+        sep_arcsec = np.empty(0, np.float64)
     _say(verbose, "Query done.")
 
-    n2, k_neighbors = sep_arcsec.shape
     matches = (
         pl.DataFrame(
             {
-                "_idx1": idx.ravel().astype(np.int64),
-                "_idx2": np.arange(n2, dtype=np.int64).repeat(k_neighbors),
-                "separation": sep_arcsec.ravel(),
+                "_idx1": idx1.ravel().astype(np.int64),
+                "_idx2": idx2.ravel().astype(np.int64),
+                "separation": sep_arcsec.ravel().astype(np.float64),
             }
         )
         .lazy()
@@ -259,7 +278,8 @@ def find_duplicates(
     Groups are friends-of-friends: two sources share a group when they are
     linked by a chain of pairs each closer than ``radius_arcsec``. A chain
     A~B~C is one group even if A and C are further apart than the radius.
-    Every source is in a group; isolated sources form groups of one.
+    Every source is in a group; isolated sources form groups of one, and so
+    does every row with a null, NaN or infinite coordinate.
 
     Parameters
     ----------
@@ -288,7 +308,10 @@ def find_duplicates(
         raise ValueError("method must be 'kdtree' or 'balltree'")
     df = df.lazy().collect()
     coords = df.select(x, y).to_numpy().astype(np.float64)
-    i, j = _close_pairs(coords, radius_arcsec, n_jobs, method)
+    # rows with a null, NaN or infinite coordinate stay in groups of their own
+    rows = _finite_rows(coords)
+    i, j = _close_pairs(coords[rows], radius_arcsec, n_jobs, method) if len(rows) else (rows, rows)
+    i, j = rows[i], rows[j]
     labels = _group_labels(df.height, i, j)
     return df.with_columns(pl.Series(group, labels)).with_columns(
         pl.len().over(group).cast(pl.UInt32).alias(size)
@@ -418,8 +441,8 @@ def remove_duplicates(
         else:
             exprs = list(agg)
         set_by_agg = {e.meta.output_name() for e in exprs}
-        if x not in set_by_agg and y not in set_by_agg:
-            exprs += _centroid(x, y)
+        # centroid for whichever of x, y the user did not aggregate
+        exprs += [e for e in _centroid(x, y) if e.meta.output_name() not in set_by_agg]
         set_by_agg |= {x, y}
         rep = [pl.col(c).first() for c in cols if c not in set_by_agg]
         out = ranked.group_by(grp, maintain_order=True).agg(
