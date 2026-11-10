@@ -69,7 +69,7 @@ More figures in the [gallery](https://balbinot.github.io/astro-polars/gallery/).
 |---|---|
 | `astro_polars.sphere` | `angular_separation` (Vincenty, numba), `angsep` and `in_cone` expressions |
 | `astro_polars.polygon` | `in_polygon` / `pinside`, parallel ray casting with numba |
-| `astro_polars.crossmatch` | `crossmatch` (alias `crossmatch_polars`), `remove_duplicates` |
+| `astro_polars.crossmatch` | `crossmatch` (alias `crossmatch_polars`), `find_duplicates`, `remove_duplicates` |
 | `astro_polars.healpix` | `healpix_index`, `degrade`, `gaia_source_id_to_healpix`, `cone_pixels` |
 | `astro_polars.coords` | rotations with proper motions and their errors: ICRS, Galactic, stream frames |
 | `astro_polars.robust` | `pl.col(x).robust.nmad()`, `.robust.zscore()` |

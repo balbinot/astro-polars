@@ -2,7 +2,13 @@ import numpy as np
 import polars as pl
 import pytest
 
-from astro_polars import angular_separation, crossmatch, crossmatch_polars, remove_duplicates
+from astro_polars import (
+    angular_separation,
+    crossmatch,
+    crossmatch_polars,
+    find_duplicates,
+    remove_duplicates,
+)
 
 
 @pytest.fixture
@@ -98,3 +104,95 @@ def test_same_column_names_get_suffix(cats):
     out = crossmatch(cat1, cat2, radius_arcsec=1, how="inner").collect()
     assert out.columns == ["id", "ra", "dec", "id_2", "ra_2", "dec_2", "separation", "multiplicity"]
     assert (out["id"] == out["id_2"]).all()
+
+
+ARCSEC = 1 / 3600
+
+
+def _line(xs, **cols):
+    """Sources on the equator at ``xs`` arcsec east of RA = 10 deg."""
+    return pl.DataFrame(
+        {
+            "id": list("ABCDEFGH"[: len(xs)]),
+            "ra": [10 + v * ARCSEC for v in xs],
+            "dec": [0.0] * len(xs),
+            **cols,
+        }
+    )
+
+
+@pytest.mark.parametrize("method", ["kdtree", "balltree"])
+@pytest.mark.parametrize(
+    "xs, kept",
+    [
+        ([0, 0, 0], ["A"]),  # exact triple
+        ([0, 0, 0, 0], ["A"]),  # exact quadruple
+        ([0, 0.9, 0.45], ["A"]),  # triple where nearest neighbours skip A-B
+        ([0, 0.9, 0.45, 0.2], ["A"]),  # quadruple, same
+        ([0, 0.8, 1.6], ["A"]),  # chain A~B~C with A, C 1.6" apart: one group
+        ([0, 0.8, 1.6, 2.4], ["A"]),
+        ([0, 0.5, 5, 5.5, 10], ["A", "C", "E"]),  # two pairs and a single
+    ],
+)
+def test_remove_duplicates_multiples(xs, kept, method):
+    out = remove_duplicates(_line(xs), radius_arcsec=1.0, method=method)
+    assert out["id"].to_list() == kept
+
+
+def test_find_duplicates_groups():
+    out = find_duplicates(_line([0, 0.8, 1.6, 5, 10, 10.5]), radius_arcsec=1.0)
+    assert out["dup_group"].to_list() == [0, 0, 0, 1, 2, 2]
+    assert out["dup_n"].to_list() == [3, 3, 3, 1, 2, 2]
+
+
+def test_remove_duplicates_priority():
+    df = _line([0, 0.3, 0.6, 5], err=[0.3, 0.1, 0.2, 1.0])
+    assert remove_duplicates(df, priority="err")["id"].to_list() == ["B", "D"]
+    assert remove_duplicates(df, priority="err", descending=True)["id"].to_list() == ["A", "D"]
+
+
+def test_remove_duplicates_agg():
+    df = _line([0, 0.3, 0.6, 5], g=[20.0, 21.0, 25.0, 18.0])
+    med = remove_duplicates(df, agg="median", size="n")
+    assert med.columns == ["id", "ra", "dec", "g", "n"]
+    assert med["g"].to_list() == [21.0, 18.0]
+    assert med["n"].to_list() == [3, 1]
+    assert med["id"].to_list() == ["A", "D"]  # non-numeric columns from the representative
+    np.testing.assert_allclose(med["ra"][0], 10 + 0.3 * ARCSEC, atol=1e-9)
+
+    custom = remove_duplicates(df, agg=[pl.col("g").mean(), pl.col("g").std().alias("g_std")])
+    assert custom.columns == ["id", "ra", "dec", "g", "g_std"]
+    np.testing.assert_allclose(custom["g"].to_list(), [22.0, 18.0])
+
+    by_col = remove_duplicates(df, agg={"g": "max"})
+    assert by_col["g"].to_list() == [25.0, 18.0]
+
+
+def test_remove_duplicates_centroid_wraps_ra():
+    df = pl.DataFrame({"ra": [359.9999, 0.0001], "dec": [0.0, 0.0]})
+    out = remove_duplicates(df, agg="mean")
+    assert len(out) == 1
+    assert min(out["ra"][0], 360 - out["ra"][0]) < 1e-6
+
+
+def test_remove_duplicates_leaves_no_close_pairs(rng):
+    n = 20_000
+    ra, dec = rng.uniform(0, 1, n), rng.uniform(0, 1, n)
+    base = rng.choice(n, 1000, replace=False)
+    mult = rng.integers(1, 5, 1000)  # 1-4 extra copies
+    ang = rng.uniform(0, 2 * np.pi, mult.sum())
+    r = rng.uniform(0, 0.45, mult.sum()) * ARCSEC
+    df = pl.DataFrame(
+        {
+            "ra": np.r_[ra, np.repeat(ra[base], mult) + r * np.cos(ang)],
+            "dec": np.r_[dec, np.repeat(dec[base], mult) + r * np.sin(ang)],
+        }
+    ).sample(fraction=1, shuffle=True, seed=0)
+    out = remove_duplicates(df, radius_arcsec=1.0)
+    assert len(find_duplicates(out, radius_arcsec=1.0).filter(pl.col("dup_n") > 1)) == 0
+
+
+def test_namespace_remove_duplicates():
+    df = _line([0, 0.3, 5], g=[1.0, 3.0, 5.0])
+    assert df.sky.remove_duplicates(agg="mean")["g"].to_list() == [2.0, 5.0]
+    assert df.sky.find_duplicates()["dup_n"].to_list() == [2, 2, 1]

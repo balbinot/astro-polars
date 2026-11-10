@@ -7,7 +7,7 @@ from typing import Sequence
 import polars as pl
 
 from . import coords
-from .crossmatch import crossmatch, remove_duplicates
+from .crossmatch import crossmatch, find_duplicates, remove_duplicates
 from .healpix import healpix_index
 from .polygon import in_polygon
 from .sphere import angsep, in_cone
@@ -127,9 +127,16 @@ class Sky:
         """Cross-match against ``other``; see ``astro_polars.crossmatch``."""
         return crossmatch(self._df, other, **kwargs)
 
-    def remove_duplicates(
-        self, x: str = "ra", y: str = "dec", radius_arcsec: float = 1.0
+    def find_duplicates(
+        self, x: str = "ra", y: str = "dec", radius_arcsec: float = 1.0, **kwargs
     ) -> pl.DataFrame:
-        """Drop sources with a neighbour closer than ``radius_arcsec``; see
-        ``astro_polars.remove_duplicates``."""
-        return remove_duplicates(self._df, x=x, y=y, radius_arcsec=radius_arcsec)
+        """Label friends-of-friends groups of close sources; see
+        ``astro_polars.find_duplicates``."""
+        return find_duplicates(self._df, x=x, y=y, radius_arcsec=radius_arcsec, **kwargs)
+
+    def remove_duplicates(
+        self, x: str = "ra", y: str = "dec", radius_arcsec: float = 1.0, **kwargs
+    ) -> pl.DataFrame:
+        """Collapse each group of close sources to one row (optionally with
+        group statistics); see ``astro_polars.remove_duplicates``."""
+        return remove_duplicates(self._df, x=x, y=y, radius_arcsec=radius_arcsec, **kwargs)
